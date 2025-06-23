@@ -1,0 +1,11 @@
+{
+  "name": "ThalesThinLib",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@gbgplc/smartcapture-web": "file:webSdk/gbgplc-smartcapture-web-v1.1.7.tar"
+  },
+  "devDependencies": {
+    "eslint": "^9.20.1"
+  }
+}

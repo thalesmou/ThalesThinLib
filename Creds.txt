@@ -1,0 +1,12 @@
+//REAL CREDS
+id_username: 	InternalSubLess@thales.com
+id_password: 	83%yYUG=u-!@
+acas_endpoint: 	https://eu.acas.acuant.net
+
+USER_PROXY: 	michael20250621
+PASS_PROXY:		KFqoFd2nv0qbifFEUTttvCT9
+
+Thales_AID_dev_EU@thales.com
+A2-8A>N>W87;uc{L
+
+bHloFF0Bh41hiX0qY03nb8TMY8gqSVj8ah0fxtRa

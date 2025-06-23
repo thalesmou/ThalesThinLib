@@ -1,0 +1,3102 @@
+<!DOCTYPE html>
+<html
+  lang="en"
+  style="
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+  "
+>
+  <head>
+    <title>Thales Test Page</title>
+    <link rel="shortcut icon" href="./images/favicon.png" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="cache-control" content="max-age=0" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <link rel="stylesheet" href="./css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" type="text/css" href="./css/animate.css" />
+    <link rel="stylesheet" type="text/css" href="./css/select2.min.css" />
+    <link rel="stylesheet" type="text/css" href="./css/perfect-scrollbar.css" />
+    <link rel="stylesheet" type="text/css" href="./css/main.css" />
+    <link href="./css/font-awesome.min.css" rel="stylesheet" />
+  </head>
+  <body id="background">
+    <div class="container center">
+      <div>
+        <div class="col-md-12">
+          <h2 id="mainheader" class="white">Test Page v5.38</h2>
+          <p id="maintext" class="white">Initializing, please wait...</p>
+        </div>
+      </div>
+      <div id="actionbox">
+        <div class="col-md-6 col-md-offset-3 center">
+          <div class="btn-container">
+            <h1 id="startBox" class="imgupload">
+              <i class="fa fa-cloud-upload"></i>
+            </h1>
+            <h1 id="OKBox" class="imgupload ok">
+              <i class="fa fa-check-circle"></i>
+            </h1>
+            <h1 id="NOKBox" class="imgupload stop">
+              <i class="fa fa-times-circle"></i>
+            </h1>
+            <h1 id="waitBox" class="imgupload wait">
+              <i class="fa fa-hourglass-half"></i>
+            </h1>
+            <h1 id="verifyBox">
+              <img
+                id="verifyImage"
+                alt="Loading..."
+                style="
+                  width: 100%;
+                  height: 100%;
+                  object-fit: contain;
+                  max-height: 250px;
+                "
+              />
+            </h1>
+          </div>
+        </div>
+      </div>
+      <div id="deviceSelectorDiv" style="display: none">
+        <div class="col-md-12">
+          <p class="white">Select Device</p>
+          <select style="width: 100%" id="deviceSelector"></select>
+        </div>
+      </div>
+      <div class="col-md-12" style="margin-top: 10px">
+        <button
+          type="button"
+          id="mainbtn"
+          class="btn btn-primary btn-lg"
+          style="margin-left: 5px"
+        >
+          Next
+        </button>
+        <button
+          type="button"
+          id="secbtn"
+          class="btn btn-sm"
+          style="margin-left: 5px"
+        >
+          Next
+        </button>
+        <button
+          type="button"
+          id="thirdbtn"
+          class="btn btn-sm"
+          style="margin-left: 5px"
+        >
+          Next
+        </button>
+        <div class="col-md-12" style="margin-top: 10px">
+          <input
+            id="apiId"
+            type="username"
+            autocomplete="on"
+            value=""
+            placeholder="API ID (if not in config file)"
+            style="width: 100%"
+          />
+        </div>
+        <div class="col-md-12">
+          <input
+            id="apiKey"
+            type="password"
+            autocomplete="on"
+            value=""
+            placeholder="API Key (if not in config file)"
+            style="width: 100%"
+          />
+        </div>
+        <div id="updateLink" class="col-md-12" style="margin-top: 10px">
+          <a class="white" onclick="configureReaderWithFile()"
+            >Update Configuration</a
+          >
+        </div>
+      </div>
+      <div id="adminLink" class="col-md-12">
+        <a class="white" onclick="openReaderAdminPage()">Reader Admin Page</a>
+      </div>
+      <div class="col-md-12" style="margin-top: 10px"></div>
+    </div>
+    <div class="limiter" id="maintable">
+      <div class="container-table100">
+        <div class="wrap-table100" id="restable"></div>
+      </div>
+    </div>
+    <input
+      style="width: 100%"
+      onClick="this.select();"
+      value=""
+      id="logger"
+      name="logger"
+      readonly
+    />
+    <script src="./ThalesThinLib.js?1234567890" charset="utf-8"></script>
+    <script>
+      //----------------------------------
+      //---------- TEST APP CONFIG -------
+      //----------------------------------
+      //Settings from URL
+      const hash = window.location.hash
+        ? window.location.hash.substring(1)
+        : null;
+      if (hash) {
+        try {
+          Credential = JSON.parse(
+            atob(hash.replace(/_/g, "/").replace(/-/g, "+"))
+          );
+        } catch (error) {
+          console.log(error);
+          Credential = {};
+        }
+      }
+      let JPEG_QUALITY = Credential.JPEG_QUALITY || 1.0;
+      let DO_VERIFICATION = Credential.DO_VERIFICATION || false;
+      let DO_VERIFICATION_UV_IR = Credential.DO_VERIFICATION_UV_IR;
+      let PASS_PROXY = Credential.PASS_PROXY || false;
+      let USER_PROXY = Credential.USER_PROXY || false;
+      if (!USER_PROXY || !PASS_PROXY) {
+        DO_VERIFICATION = false;
+      }
+      let SDK_USER = Credential.id_username;
+      let SDK_PASS = Credential.id_password;
+      let SDK_ENDPOINT = Credential.acas_endpoint;
+
+      let CAPTURE_TIMEOUT = Credential.CAPTURE_TIMEOUT || null;
+      let MAX_SDK_ATTEMPTS =
+        Credential.MAX_SDK_ATTEMPTS !== undefined
+          ? Credential.MAX_SDK_ATTEMPTS
+          : 1;
+      let MAX_SERVER_ATTEMPTS =
+        Credential.MAX_SERVER_ATTEMPTS !== undefined
+          ? Credential.MAX_SERVER_ATTEMPTS
+          : 3;
+      let ACTION_BUTTON =
+        Credential.ACTION_BUTTON || Credential.EXIT_ON_BACK || false;
+      let DO_CUSTOMS_BUTTON = Credential.DO_CUSTOMS_BUTTON || false;
+      let DPI_THRESH =
+        Credential.DPI_THRESH >= 0 ? Credential.DPI_THRESH : null;
+      let MIN_DPI_THRESH =
+        Credential.MIN_DPI_THRESH >= 0 ? Credential.MIN_DPI_THRESH : null;
+      let GLARE_THRESH =
+        Credential.GLARE_THRESH >= 0 ? Credential.GLARE_THRESH : null;
+      let SHARPNESS_THRESH =
+        Credential.SHARPNESS_THRESH >= 0 ? Credential.SHARPNESS_THRESH : null;
+      let FALLBACK_POLICY = Credential.FALLBACK_POLICY || null;
+      let DO_CUSTOMS = Credential.DO_CUSTOMS || false;
+      let DO_CUSTOMS_FACE = Credential.DO_CUSTOMS_FACE || false;
+      let DO_BARCODE = Credential.DO_BARCODE || false;
+      let DO_BARCODE_UPLOAD = Credential.DO_BARCODE_UPLOAD || false;
+      let DO_DEBUG = Credential.DO_DEBUG || false;
+      let DO_READER = Credential.DO_READER || false;
+      let DO_READER_NO_TLS = Credential.DO_READER_NO_TLS || false;
+      let DISABLE_WEBCAM_OPT = Credential.DISABLE_WEBCAM_OPT || false;
+      let DO_IR = Credential.DO_IR || true;
+      let DO_UV = Credential.DO_UV || true;
+      let SPECIAL_DOUBLE_VERIF = Credential.SPECIAL_DOUBLE_VERIF || false;
+      let OPTIMIZE_MOBILE_RES = Credential.OPTIMIZE_MOBILE_RES || false;
+      let DO_STILL_PHOTO = Credential.DO_STILL_PHOTO || false;
+      let READER_DEBARELL = Credential.READER_DEBARELL;
+      let CAMERA_MODE = !!Credential.CAPTURE_METHOD
+        ? Credential.CAPTURE_METHOD
+        : !DO_READER
+        ? "Mobile"
+        : "Camera";
+      let SPECIAL_MEDIA_CONSTRAINTS = null;
+      try {
+        if (Credential.SPECIAL_MEDIA_CONSTRAINTS) {
+          SPECIAL_MEDIA_CONSTRAINTS = JSON.parse(
+            Credential.SPECIAL_MEDIA_CONSTRAINTS
+          );
+        }
+      } catch {
+        console.log("Error parsing SPECIAL_MEDIA_CONSTRAINTS");
+      }
+      let SPECIAL_COUNT_SECS = Credential.SPECIAL_COUNT_SECS || null;
+      let IMAGE_CHECK_CONFIG = null;
+      try {
+        if (Credential.IMAGE_CHECK_CONFIG) {
+          IMAGE_CHECK_CONFIG = JSON.parse(Credential.IMAGE_CHECK_CONFIG);
+        }
+      } catch {
+        console.log("Error parsing IMAGE_CHECK_CONFIG");
+      }
+      let FACE_ON_DOC_THRESH = Credential.FACE_ON_DOC_THRESH;
+      let DO_SMART_CAPTURE = Credential.DO_SMART_CAPTURE;
+      let DO_UNCROPPED = Credential.DO_UNCROPPED;
+      let SERVER_CROPPING = DO_UNCROPPED || DO_SMART_CAPTURE;
+      let MODE = Credential.MODE;
+      let REPORT_IS_SENSITIVE = Credential.REPORT_IS_SENSITIVE;
+      let REPORT_CONSOLE_LOGS = Credential.REPORT_CONSOLE_LOGS;
+
+      //Variables
+      let report = { sensitive: {} };
+      let lastPortrait = null;
+      let lastFullName = null;
+
+      //Variables
+      let session = null;
+      let sessionFace = null;
+      //-----------------------------
+      //------------ END ------------
+      //-----------------------------
+
+      //---------------------------------------------------------------------
+      //------------ ACUANT SDK and ThalesThinLib INITIALIZATION ------------
+      //---------------------------------------------------------------------
+      if (window.AndroidNativeInterface) {
+        console.log("There is an Android Interface. Yay!")
+        try {
+          window.AndroidNativeInterface.init();
+        } catch (err) {
+          console.log("Interface Error: " + err);
+        }
+      }
+      const isMob = ThalesThinLib.platform() !== ThalesThinLib.ENUM.DESKTOP;
+      //Define the action button
+      const actionButton =
+        !ACTION_BUTTON && !DO_CUSTOMS_BUTTON
+          ? null
+          : {
+              //On custom mode, switch between auto/manual capture, on standard have close button
+              text: !DO_CUSTOMS_BUTTON ? "CLOSE" : "AUTO ON",
+              size: "20px",
+              delay: (CAPTURE_TIMEOUT * 3) / 4,
+              action: !DO_CUSTOMS_BUTTON
+                ? undefined
+                : () => {
+                    window.AcuantCameraCustom.forceTapToCapture = true;
+                    return "AUTO OFF";
+                  },
+            };
+      const rootUrl = window.location.href.substring(
+        0,
+        window.location.href.lastIndexOf("/") + 1
+      );
+
+      //Define ThalesThinLib built-in UIs
+      const fontSizePercentage = 0.02;
+      const fillRootColor = "rgb(111, 111, 111)";
+      const UiMessages = {};
+      UiMessages[ThalesThinLib.ENUM.ERROR_CROP] =
+        "Ensure all corners are visible";
+      UiMessages[ThalesThinLib.ENUM.CAPTURE_MANUAL] = "";
+      UiMessages[ThalesThinLib.ENUM.UPLOADING] = "Uploading...";
+      UiMessages[ThalesThinLib.ENUM.CROPPING] = "Analyzing...";
+      UiMessages[ThalesThinLib.ENUM.HIGH_GLARE] = "Glare detected";
+      UiMessages[ThalesThinLib.ENUM.LOW_RES] = "Come closer to document";
+      UiMessages[ThalesThinLib.ENUM.LOW_SHARPNESS] = "Seems a bit blurry";
+      UiMessages[ThalesThinLib.ENUM.ERROR_CLASSIFY] =
+        "Couldn't recognize the image";
+      UiMessages[ThalesThinLib.ENUM.CAPTURE_BACK] = "FLIP document";
+      UiMessages[ThalesThinLib.ENUM.ERROR_TIMEOUT] = "Timed out";
+      UiMessages[ThalesThinLib.ENUM.ERROR_SDK] = "Timed out";
+      UiMessages[ThalesThinLib.ENUM.ERROR_CLOSE_BTN] = "Let's try again";
+      UiMessages[ThalesThinLib.ENUM.SDK_ERROR] = "Let's try again";
+      UiMessages[ThalesThinLib.ENUM.SDK_FAILED] = "Let's try again";
+      UiMessages[ThalesThinLib.ENUM.CAMERA_PERMISSIONS_DENIED] =
+        "Allow Camera Permissions";
+      UiMessages[ThalesThinLib.ENUM.CAMERA_PARAMS_ERR] =
+        "Failed to start camera";
+      UiMessages[ThalesThinLib.ENUM.CAMERA_ISSUE] = "Failed to start camera";
+      UiMessages["REPOSITION"] = "Move the document a bit";
+      UiMessages["FACE_ERROR"] = "Move a bit, light is not flattering";
+      UiMessages["FACE_ROTATED"] = "Head has an angle. Try again";
+      UiMessages["FACE_FAR"] = "Too far. Try again";
+      UiMessages["FACE_CLOSE"] = "Too close. Try again";
+      UiMessages["FACE_MANY"] = "Multiple faces detected. Try again>";
+      UiMessages["VERIFICATION"] = "Verifying...";
+      UiMessages["VERIFICATION_RETRY"] =
+        "Plese try again. Capture FRONT side image...";
+      UiMessages["READER_CAPTURING_FRONT"] =
+        "Place FRONT side of document on reader!";
+      UiMessages["READER_CAPTURING_BACK"] =
+        "Place BACK side document on reader!";
+      UiMessages["READER_DOWNLOADING"] = "Retrieving images...";
+      UiMessages["READER_CONNECTING"] = "Connecting to reader...";
+      UiMessages["READER_IP_SCAN"] = "This may take a few minutes...";
+      UiMessages[ThalesThinLib.ENUM.READER_CONNECTED] = "Connected!";
+      UiMessages[ThalesThinLib.ENUM.READER_REBOOTING] = "Rebooting...";
+      UiMessages[ThalesThinLib.ENUM.READER_CONNECTION_FAILED] =
+        "Couldn't connect, try again";
+      UiMessages[ThalesThinLib.ENUM.SDK_CONFIG_ERROR] =
+        "Invalid configuration file";
+      UiMessages[ThalesThinLib.ENUM.READER_CONNECTION_FAILED_APIKEY] =
+        "Couldn't authenticate, update configuration";
+      UiMessages[ThalesThinLib.ENUM.READER_CAPTURE_FAILED] =
+        "Couldn't get images, try again";
+      UiMessages[ThalesThinLib.ENUM.READER_DISCONNECTED] =
+        "Connection lost, try again";
+      UiMessages[ThalesThinLib.ENUM.READER_IN_USE] = "Reader is already used";
+      UiMessages[ThalesThinLib.ENUM.READER_CONNECTION_NOT_SETUP] =
+        "Configuration not found";
+      UiMessages["SETUP_DONE"] = "You can now connect";
+      UiMessages["READER_REMOVE"] = "Remove document from reader";
+      UiMessages["READER_AUTH_FAILURE"] = "Invalid API ID or Key. Try again";
+      UiMessages["READER_ADMIN"] = "How is the reader connected?";
+      UiMessages["READER_ADMIN_WIFI"] = "Connect to AT10/CR540 Wi-Fi";
+      UiMessages["READER_ADMIN_CONNECT"] = "Open Thales Reader Admin Page";
+      UiMessages["READER_PROVISION_FAILED"] = "Provisioning failed!";
+      UiMessages["READER_PROVISION_CHECK"] =
+        "Provisioning, this will take a few minutes...";
+      UiMessages[ThalesThinLib.ENUM.READER_FATAL_ERROR] =
+        "Is the reader ON? Try again";
+      UiMessages[ThalesThinLib.ENUM.READER_SERIAL_MODEL_MISMATCH] =
+        "Invalid Serial or Model!";
+      UiMessages[ThalesThinLib.ENUM.READER_ALREADY_PROVISIONED] =
+        "Reader is already provisioned";
+      UiMessages[ThalesThinLib.ENUM.READER_UNPROVISIONED] =
+        "Reader un-provisioned, rebooting...";
+      UiMessages[ThalesThinLib.ENUM.READER_INVALID_PROVISIONING_PAYLOAD] =
+        "Configuration to setup reader is invalid";
+      UiMessages[ThalesThinLib.ENUM.READER_ADMIN_PRIVILEGES] =
+        "Requires admin privileges";
+      UiMessages["READER_FW_UPLOAD"] = "Uploading Firmware...";
+      UiMessages["READER_FW_INSTALL"] = "Updating Firmware...";
+      UiMessages["VERIFY_AGAIN"] = "Couldn't verify document. Retry";
+
+      const textSize = isMob ? "20px" : "30px";
+      let UiRetake = {
+        fillRootColor: fillRootColor,
+        actionButtonText: "RETRY",
+        textSize: textSize,
+        fontSizePercentage: fontSizePercentage,
+      };
+
+      let UiRetakeImage = {
+        fillRootColor: fillRootColor,
+        actionButtonText: "RETRY",
+        textSize: textSize,
+        fontSizePercentage: fontSizePercentage,
+        imageSrc: "./images/background.png",
+        fillImage: true,
+      };
+
+      let UiUploadFront = {
+        fillRootColor: fillRootColor,
+        actionButtonText: "RETRY FRONT",
+        textSize: textSize,
+        //imageSrc: "./images/id.png",
+        fontSizePercentage: fontSizePercentage,
+      };
+
+      let UiUploadBack = {
+        fillRootColor: fillRootColor,
+        actionButtonText: "RETRY BACK",
+        textSize: textSize,
+        //imageSrc: "./images/id_back.png",
+        fontSizePercentage: fontSizePercentage,
+      };
+
+      let UiNoBtn = {
+        fillRootColor: fillRootColor,
+        actionButtonText: null, //Will only display
+        textSize: textSize,
+        imageSrc: "./images/background.png",
+        fillImage: true,
+        fontSizePercentage: fontSizePercentage,
+      };
+
+      let UiFlip = {
+        fillRootColor: fillRootColor,
+        actionButtonText: "DONE",
+        textSize: textSize,
+        imageSrc: "./images/id_flip.gif",
+        fontSizePercentage: fontSizePercentage,
+      };
+
+      let UiManual = {
+        fillRootColor: fillRootColor,
+        actionButtonText: "TAKE PICTURE",
+        textSize: textSize,
+        imageSrc: "./images/manual.png",
+        fontSizePercentage: fontSizePercentage,
+      };
+
+      let UiReposition = {
+        fillRootColor: fillRootColor,
+        actionButtonText: "DONE",
+        textSize: textSize,
+        fontSizePercentage: fontSizePercentage,
+        imageSrc: "./images/id_move.gif",
+      };
+
+      let UiBtn = {
+        fillRootColor: fillRootColor,
+        actionButtonText: "DONE",
+        textSize: textSize,
+        imageSrc: "./images/background.png",
+        fillImage: true,
+      };
+
+      let UiPhotoSelect = {
+        fillRootColor: fillRootColor,
+        actionButtonText: "Approve",
+        actionButtonAltText: "REJECT",
+        textSize: textSize,
+        fontSizePercentage: fontSizePercentage,
+        //isPhoto: true,
+      };
+
+      let UiReaderSetup = {
+        fillRootColor: fillRootColor,
+        actionButtonText: "Configure",
+        actionButtonAltText: "Cancel",
+        textSize: textSize,
+        imageSrc: "./images/background.png",
+        fillImage: true,
+      };
+
+      let UiReaderSetupDone = {
+        fillRootColor: fillRootColor,
+        actionButtonText: "Next",
+        textSize: textSize,
+        imageSrc: "./images/background.png",
+        fillImage: true,
+      };
+
+      let UiReaderAuthFailure = {
+        fillRootColor: fillRootColor,
+        actionButtonText: "Retry",
+        textSize: textSize,
+        imageSrc: "./images/background.png",
+        fillImage: true,
+      };
+
+      let UiReaderAutoDiscover = {
+        fillRootColor: fillRootColor,
+        actionButtonText: "Detect",
+        actionButtonAltText: "Retry",
+        textSize: textSize,
+        imageSrc: "./images/background.png",
+        fillImage: true,
+      };
+
+      let UiReaderAdmin = {
+        fillRootColor: fillRootColor,
+        actionButtonText: "Wi-Fi",
+        actionButtonAltText: "Ethernet",
+        textSize: textSize,
+        imageSrc: "./images/background.png",
+        fillImage: true,
+      };
+
+      let UiReaderAdminWiFi = {
+        fillRootColor: fillRootColor,
+        actionButtonText: "Connected",
+        textSize: textSize,
+        imageSrc: "./images/background.png",
+        fillImage: true,
+      };
+
+      let UiReaderRetry = {
+        fillRootColor: fillRootColor,
+        actionButtonText: "Connect",
+        textSize: textSize,
+        imageSrc: "./images/background.png",
+        fillImage: true,
+      };
+
+      let UiReaderRemoveDoc = {
+        fillRootColor: fillRootColor,
+        actionButtonText: "Removed",
+        textSize: textSize,
+        imageSrc: "./images/background.png",
+        fillImage: true,
+      };
+
+      let UiBarcodeGen = {
+        fillRootColor: fillRootColor,
+        actionButtonText: "Done",
+        textSize: textSize,
+        textAsBarcode: true,
+        fillImage: true,
+      };
+
+      showWait();
+
+      //*** STEP 0: Set the reader configuration
+      //This could be downloaded from the backend
+      const ThalesThinLibConfig = {
+        acuantSdk: {
+          //Acuant SDK Text personalization
+          text: {
+            NONE: DO_SMART_CAPTURE ? "FIT IN FRAME" : "ALIGN",
+            SMALL_DOCUMENT: "MOVE CLOSER",
+            GOOD_DOCUMENT: null, //null countdown
+            BIG_DOCUMENT: DO_SMART_CAPTURE ? "FIT IN FRAME" : "TOO CLOSE",
+            CAPTURING: "HOLD STILL",
+            TAP_TO_CAPTURE: isMob ? "TAP TO CAPTURE" : "CLICK TO CAPTURE",
+          },
+        },
+        uncropped: DO_UNCROPPED,
+        fillRootColor: "rgb(111, 111, 111)", //fill the background with this color
+        fillBodyColor: DO_CUSTOMS ? "rgb(111, 111, 111)" : null, //fill the document.body element background with this color
+        captureTimeout: CAPTURE_TIMEOUT, //Capture timeout in milliseconds
+        maxSdkAttempts: MAX_SDK_ATTEMPTS, //Maximum attempts to re-capture an image
+        maxVerifAttempts: 2, //Maximum document verifications with backend
+        maxCaptureAttempts: MAX_SERVER_ATTEMPTS, //Maximum uploaded images
+        actionButton: actionButton,
+        acuantSdkThresholds: {
+          //If ommitted, default 450/50/50
+          dpi: DPI_THRESH, //For Web Cams, it can be set low to allow errors to be caught differently
+          glare: GLARE_THRESH,
+          sharpness: SHARPNESS_THRESH,
+        },
+        fullscreen: false, //Fullscreen may hide camera access menu
+        barcodeFilter: "[a-zA-Z]{3}[a-zA-Z]{3}", //Add to filter barcode, highly recommended if the approximate format is known
+        sdkLib: DO_CUSTOMS ? "ThalesCamera" : "AcuantCamera", //NOTE: Omit if no custom
+        sdkUiLib: DO_CUSTOMS ? "ThalesCameraUI" : "AcuantCameraUI", //NOTE: Omit if no custom
+        debugBorders: DO_DEBUG,
+        checkColor: IMAGE_CHECK_CONFIG,
+        sc: {
+          en: false,
+          hc: true,
+          hm: true,
+          em: 3,
+          vc: 3,
+          in: true,
+        },
+        init: {
+          path: rootUrl + "webSdk/dist", //used to load all other .js and rest of "SDK files"
+          basicAuth: btoa(SDK_USER + ":" + SDK_PASS),
+          //jwt: token, //use alternatively
+          endpoint: SDK_ENDPOINT,
+          jpegQuality: JPEG_QUALITY,
+          maxRetries: 3,
+          retryTimeout: 500,
+          slowMode: false,
+          fromCDN: false,
+          scanBarcode: true, //scans the barcode from the image
+          //NOTE: Omit if no custom. Also, use AcuantCamera.min.js for production
+          sdkLibName: DO_CUSTOMS ? "ThalesCamera.js" : "AcuantCamera.js",
+          enableHeicImage: false, //enables HEIC images, useful for Mac OS and only if manual uplaoded required
+          slowLoad: MODE === "FACE_ONLY", //If true, it will wait all libraries to load, even optional ones
+          faceDetection:
+            MODE === "FACE_ONLY" ||
+            MODE === "FACE_AND_DOC" ||
+            !!FACE_ON_DOC_THRESH, //initialize face detection module
+          smartCapture: DO_SMART_CAPTURE,
+        },
+        alternateFallback: !DO_CUSTOMS
+          ? undefined
+          : () => {
+              window.AcuantCameraCustom.forceTapToCapture = true;
+              ThalesThinLibConfig.actionButton = null;
+              if (DO_STILL_PHOTO) {
+                window.AcuantCameraCustom.stillPhoto =
+                  ThalesThinLib.cameraUtils.stillPhoto;
+              }
+            },
+        alternateFallbackEnd: !DO_CUSTOMS
+          ? undefined
+          : () => {
+              window.AcuantCameraCustom.forceTapToCapture = false;
+              ThalesThinLibConfig.actionButton = actionButton;
+              if (DO_STILL_PHOTO) {
+                window.AcuantCameraCustom.stillPhoto = null;
+              }
+            },
+      };
+
+      const ThalesThinLibConfigFace = {
+        acuantSdk: {
+          //Acuant SDK Text personalization
+          text: {
+            NONE: "LOOK STRAIGHT",
+            SMALL_DOCUMENT: "MOVE CLOSER",
+            GOOD_DOCUMENT: null, //null countdown
+            BIG_DOCUMENT: "TOO CLOSE",
+            CAPTURING: "HOLD STILL",
+            TAP_TO_CAPTURE: isMob ? "TAP TO CAPTURE" : "CLICK TO CAPTURE",
+          },
+        },
+        fillRootColor: "rgb(111, 111, 111)",
+        fillBodyColor: "rgb(111, 111, 111)",
+        captureTimeout: CAPTURE_TIMEOUT, //Capture timeout in milliseconds
+        maxSdkAttempts: MAX_SDK_ATTEMPTS, //Maximum attempts to re-capture an image
+        maxCaptureAttempts: MAX_SERVER_ATTEMPTS, //Maximum uploaded images
+        actionButton: actionButton,
+        fullscreen: false, //Fullscreen may hide camera access menu
+        sdkLib: "ThalesCamera", //NOTE: Omit if no custom
+        sdkUiLib: "ThalesCameraUI", //NOTE: Omit if no custom
+        debugBorders: DO_DEBUG,
+        skipChecks: true, //skips all quality checks on image
+        sc: {
+          block: true,
+          hc: true,
+          hm: true,
+          em: 3,
+          vc: 3,
+        },
+        init: {
+          scanBarcode: false,
+          jpegQuality: 0.8,
+          faceDetection: true, //initialize face detection module
+        },
+      };
+
+      const ThalesBarcodeConfig = {
+        acuantSdk: {
+          text: {
+            NONE: "BARCODE",
+            SMALL_DOCUMENT: "ALIGN",
+            GOOD_DOCUMENT: "FOUND",
+            BIG_DOCUMENT: "ALIGN",
+            CAPTURING: "HOLD STILL",
+            TAP_TO_CAPTURE: isMob ? "TAP TO CAPTURE" : "CLICK TO CAPTURE",
+          },
+        },
+        sdkLib: "ThalesCamera", //NOTE: Omit if no custom
+        sdkUiLib: "ThalesCameraUI", //NOTE: Omit if no custom
+        fillRootColor: "rgb(111, 111, 111)", //fill the background with this color
+        fillBodyColor: "rgb(111, 111, 111)", //fill the document.body element background with this color
+        captureTimeout: CAPTURE_TIMEOUT, //Capture timeout in milliseconds
+        maxSdkAttempts: 1, //Maximum attempts to re-capture an image
+        actionButton: actionButton,
+        fullscreen: false, //Fullscreen may hide camera access menu
+        barcodeFilter: "[a-zA-Z]{3}", //Add to filter barcode, highly recommended if the approximate format is known
+        debugBorders: DO_DEBUG,
+        skipChecks: true,
+        init: {
+          scanBarcode: true, //scans the barcode from the image
+        },
+        alternateFallback: !DO_CUSTOMS
+          ? undefined
+          : () => {
+              window.AcuantCameraCustom.forceTapToCapture = true;
+            },
+        alternateFallbackEnd: !DO_CUSTOMS
+          ? undefined
+          : () => {
+              window.AcuantCameraCustom.forceTapToCapture = false;
+            },
+      };
+
+      const ThalesReaderSdkCfg = {
+        maxSdkAttempts: MAX_SDK_ATTEMPTS,
+        maxCaptureAttempts: MAX_SERVER_ATTEMPTS, //Maximum capture and uploads
+        maxVerifAttempts: 2, //Maximum document verifications
+        enableUV: DO_UV, //Enables Ultraviolet image
+        enableIR: DO_IR, //Enables Near-infrared image
+        isDebug: DO_DEBUG, //Sets the reader logs to debug level
+        getReaderLogs: true, //Get app logs from reader
+        barcodeFilter: "[a-zA-Z]{3}", //Add to filter barcode, highly recommended if the approximate format is known
+        //fallbackTimeout: 3 * 10 * 1000, //Sets a timeout for fallback IP scanning
+        checkCrop: true, //SDK checks if image was properly cropped
+        //documentSize: ThalesThinLib.ENUM.TD1, //Set if the size of document was known
+        init: {
+          isThalesReader: true, //must be set to true
+          path: rootUrl, //where to download webapi-helper_xx.js and webapi_xx.js
+          /* readerConnectionSettings : object set if settings where coming from backend,
+          {
+               readerHost: string, //IP
+               apiId: string, //API ID
+               apiKey: string, //API Key
+               ipRangeStart: string, //Used for IP discovery, if needed
+               ipRangeStart: string, //Used for IP discovery, if needed
+               readerSerial: string, //Used if readerHost is not present. Will build hostname as MODEL-SERIAL.local
+               readerModel: string, //Used if readerHost is not present. Will build hostname as MODEL-SERIAL.local
+            }
+            */
+          //readers: object, //JSON array, each element has format of readerConnectionSettings
+          //agent: null, //the name of the agent (person), otherwise put in selectReader
+          connectionTimeout: 15 * 1000, //Timeout between retries (min 5sec)
+          connectionMaxRetries: 2, //Connection retries to the reader
+          imageCaptureTimeout: CAPTURE_TIMEOUT, //Timeout to complete capture
+          scaleFactor: 80, //Image size, 82 gives about 500-600 DPI
+          doDebarrel: READER_DEBARELL,
+          jpgQuality: JPEG_QUALITY, //JPG quality, default 90
+          noPdf417Barcode: false, //disabling scanning the PDF717 Barcode
+          noPhoto: false, //disables extracting photo image
+          debugLogLevel: DO_DEBUG ? "debug" : null, //Only set temporarily to debug
+          readerDebugLogLevel: 3, //Sets the default log level of the reader, typically 2 (WARN/ERROR) or 3 (WARN/ERROR/INFO)
+          //noLogs: false, //disables logging if set to true
+          noTls: DO_READER_NO_TLS, //for special cases, NOT for production
+          skipMDNS: true, //disallow mDNS entirely
+          minTimeUpdateLogs: 1 * 60 * 1000, //how soon to ask for reader logs again (even if fail)
+          maxTimeUpdateLogs: 10 * 60 * 1000, //how soon to get reader logs after success
+          doClearLogs: true, //will erase all reader app logs after read
+          autoRebootOnConnect: true, //automatically reboot, when needed
+          shareResults: {
+            allowedOrigins: [
+              "https://cottoolbox",
+              "https://thalescsm.gitlab.io",
+            ],
+            verifier: null,
+          },
+        },
+      };
+
+      //Initialize SDK
+      ThalesThinLib.setLogger(document.getElementById("logger"));
+
+      //Use slow mode if low end Android device
+
+      ThalesThinLib.withSdk
+        .init(DO_READER ? ThalesReaderSdkCfg : ThalesThinLibConfig)
+        .then((ses) => {
+          //Save two copies, one for document and one for face
+          session = ThalesThinLib.withSdk.newSession(ses);
+          sessionFace = ThalesThinLib.withSdk.newSession(ses);
+          updateText("Verify a new Identity", "IDV Test Page");
+          showStart();
+        })
+        .catch((code, description) => {
+          updateText("Refresh the page to try gain", "Initialization Failed");
+          showNOKFatal();
+        });
+
+      //*** END - Step 0
+
+      //-----------------------------
+      //------------ END ------------
+      //-----------------------------
+
+      //-----------------------------------------
+      //------- TEST APP DOCUMENT CAPTURE -------
+      //-----------------------------------------
+      //Start capture
+      async function startCamera(session, isFace, faceAndDoc) {
+        const state = ThalesThinLib.withSdk.getState(session);
+        const isBack = state === ThalesThinLib.ENUM.STATE_BACK;
+        const isDocDone = state === ThalesThinLib.ENUM.STATE_FRONT_BACK;
+        try {
+          if (DO_CUSTOMS_FACE && isFace) {
+            window.AcuantCameraCustomFace(); //set custom camera with face capture settings
+          } else if (DO_CUSTOMS && !isFace) {
+            window.AcuantCameraCustomInit(); //set custom camera settings to defaults            
+            if (SPECIAL_DOUBLE_VERIF) {
+              //Special case to get high quality image (100% JPEG quality)
+              //and compare against a lower quality image
+              window.AcuantCameraCustom.hiQualImage = true;
+            }
+            if (OPTIMIZE_MOBILE_RES) {
+              window.AcuantCameraCustom.optimizeVideoConstraints =
+                window.AcuantCameraCustom.optimizeVideoFun;
+            }
+            if (SPECIAL_MEDIA_CONSTRAINTS) {
+              window.AcuantCameraCustom.overrideVideoConstraints =
+                SPECIAL_MEDIA_CONSTRAINTS;
+            }
+            if (SPECIAL_COUNT_SECS) {
+              window.AcuantCameraCustom.countDownSecs = SPECIAL_COUNT_SECS;
+            }
+
+            //For desktops, camera selection maybe needed
+            if (!isMob || DO_READER) {
+              const cameraSel = document.getElementById("deviceSelector");
+              const deviceId = cameraSel.value;
+              const cameraModel =
+                cameraSel.options[cameraSel.selectedIndex].text;
+              if (!DISABLE_WEBCAM_OPT) {
+                if (cameraModel && cameraModel.includes("WB7022")) {
+                  window.AcuantCameraCustom.advancedConstraints = [
+                    {
+                      brightness: 0,
+                    },
+                  ];
+                }
+              }
+              if (deviceId) {
+                window.AcuantCameraCustom.overrideVideoConstraints = {
+                  deviceId: deviceId,
+                };
+              } else {
+                window.AcuantCameraCustom.overrideVideoConstraints = true;
+              }
+            }
+          }
+          //Start session with backend asynchroneously
+          const startSession = null;
+          if (!session.scenarioId && DO_VERIFICATION) {
+            startUpploadDocument(SERVER_CROPPING, CAMERA_MODE).then(
+              (backendSes) => {
+                if (backendSes && backendSes.id) {
+                  session.scenarioId = backendSes.id;
+                  ThalesThinLib.withSdk.setLogData(null, {
+                    key: ThalesThinLib.ENUM.BACKEND_SESSION,
+                    value: session.scenarioId,
+                  });
+                }
+              }
+            );
+          }
+          //Show screen for manual capture, just in case user dismisses manual capture
+          //OS doesn't provide ways to know if user cancelled, only if they captured
+          //an image is the SDK notified
+          ThalesThinLib.withSdk
+            .errorMessageUi(
+              UiMessages[ThalesThinLib.ENUM.CAPTURE_MANUAL],
+              UiManual
+            )
+            .then(() => {
+              startCamera(session, isFace, faceAndDoc);
+            });
+          //Start document capture
+          const r = await ThalesThinLib.withSdk.capture(
+            session,
+            ThalesThinLibConfig,
+            !isFace ? FALLBACK_POLICY : null //no fallback for face capture
+          );
+          //Image is being cropped
+          await ThalesThinLib.withSdk.errorMessageUi(
+            UiMessages[r.state],
+            UiNoBtn
+          );
+          //Wait for SDK processing
+          const uploaded = await r.promise;
+          if (!uploaded) {
+            //Indicate that uploading is starting
+            await ThalesThinLib.withSdk.errorMessageUi(
+              UiMessages[ThalesThinLib.ENUM.UPLOADING],
+              UiNoBtn
+            );
+            //Wait for backend session to start
+            await startSession;
+            //Send image for upload
+            if (isFace) {
+              await uploadFace(report);
+              ThalesThinLib.withSdk.setLogData(session, {
+                key: "FACE_VERIFICATION",
+                value: report.faceOk ? "ACCEPTED" : report.faceError,
+              });
+            } else {
+              await uploadDocument(report);
+            }
+          }
+          //Check if more upload attempts available
+          const noAttempts =
+            ThalesThinLib.withSdk.getCaptures(session).left <= 0;
+          if (!isFace && FACE_ON_DOC_THRESH) {
+            //Just run and log for now...
+            ThalesThinLib.withSdk
+              .faceDetection(session, FACE_ON_DOC_THRESH)
+              .then((r) => {
+                console.log("Logged face detection: " + JSON.stringify(r));
+              });
+          }
+
+          //UPLOAD LOGIC
+          const uploadOk = isFace ? report.faceOk : report.ok;
+          if (!DO_VERIFICATION) {
+            showResults(report);
+          } else if (report.doBack && !noAttempts) {
+            ThalesThinLib.withSdk.switchSide(session);
+            ThalesThinLib.withSdk
+              .errorMessageUi(
+                UiMessages[ThalesThinLib.ENUM.CAPTURE_BACK],
+                UiFlip
+              )
+              .then(() => {
+                startCamera(session, isFace, faceAndDoc);
+              });
+          } else if (uploadOk || noAttempts) {
+            if (!isFace) {
+              ThalesThinLib.withSdk.errorMessageUi(
+                UiMessages["VERIFICATION"],
+                UiNoBtn
+              );
+              await getDocumentVerification(report);
+              //Pass key data to record retry of same document
+              ThalesThinLib.withSdk.bothSidesDone(
+                session,
+                report.docNumber,
+                report.dateOfBirth,
+                report.expirationDate,
+                report.ok
+                  ? ThalesThinLib.ENUM.VERIFICATION_ACCEPTED
+                  : ThalesThinLib.ENUM.VERIFICATION_REJECTED
+              );
+              const noVerifAttempts =
+                ThalesThinLib.withSdk.getVerifications(session).left <= 0;
+              if (!report.ok && !noVerifAttempts) {
+                //Start a new verification session
+                await ThalesThinLib.withSdk.errorMessageUi(
+                  UiMessages["VERIFICATION_RETRY"],
+                  UiRetakeImage
+                );
+                openCamera();
+                return;
+              }
+            }
+            if (faceAndDoc && !isFace && report.ok) {
+              sessionFace.scenarioId = session.scenarioId;
+              startCamera(sessionFace, true, faceAndDoc);
+            } else {
+              showResults(report, isFace);
+            }
+          } else {
+            if (isFace) {
+              let errMsg = UiMessages["FACE_ERROR"];
+              if (report.faceError === "FaceAngleTooLarge") {
+                errMsg = UiMessages["FACE_ROTATED"];
+              } else if (report.faceError === "FaceTooSmall") {
+                errMsg = UiMessages["FACE_FAR"];
+              } else if (report.faceError === "FaceCropped") {
+                errMsg = UiMessages["FACE_CLOSE"];
+              } else if (report.faceError === "TooManyFaces") {
+                errMsg = UiMessages["FACE_MANY"];
+              }
+              ThalesThinLib.withSdk
+                .errorMessageUi(errMsg, UiRetake, session)
+                .then(() => {
+                  startCamera(session, isFace, faceAndDoc);
+                });
+            } else {
+              await ThalesThinLib.withSdk.errorMessageUi(
+                UiMessages[ThalesThinLib.ENUM.ERROR_CLASSIFY],
+                UiRetake,
+                session
+              );
+              ThalesThinLib.withSdk
+                .errorMessageUi(UiMessages["REPOSITION"], UiReposition)
+                .then(() => {
+                  startCamera(session, isFace, faceAndDoc);
+                });
+            }
+          }
+          //END
+        } catch (code) {
+          console.log("Capture failed: " + code);
+          if (
+            code === ThalesThinLib.ENUM.LOW_RES ||
+            code === ThalesThinLib.ENUM.ERROR_CROP ||
+            code === ThalesThinLib.ENUM.LOW_SHARPNESS
+          ) {
+            ThalesThinLib.withSdk
+              .errorMessageUi(UiMessages[code], UiRetake, session)
+              .then(() => {
+                startCamera(session, isFace, faceAndDoc);
+              });
+          } else if (code === ThalesThinLib.ENUM.HIGH_GLARE) {
+            await ThalesThinLib.withSdk.errorMessageUi(
+              UiMessages[code],
+              UiRetake,
+              session
+            );
+            ThalesThinLib.withSdk
+              .errorMessageUi(UiMessages["REPOSITION"], UiReposition)
+              .then(() => {
+                startCamera(session, isFace, faceAndDoc);
+              });
+          } else {
+            //Some other error
+            const errMsg = UiMessages[code]
+              ? UiMessages[code]
+              : "Something went wrong";
+            ThalesThinLib.withSdk
+              .errorMessageUi(errMsg, UiRetakeImage)
+              .then(() => {
+                startCamera(session, isFace, faceAndDoc);
+              });
+          }
+        } finally {
+          if (!isFace) {
+            if (!report.docCaptureSdkLogs) report.docCaptureSdkLogs = [];
+            report.docCaptureSdkLogs.push(
+              ThalesThinLib.withSdk.getLog(session)
+            );
+          } else {
+            if (!report.faceCaptureSdkLogs) report.faceCaptureSdkLogs = [];
+            report.faceCaptureSdkLogs.push(
+              ThalesThinLib.withSdk.getLog(sessionFace)
+            );
+          }
+        }
+      }
+
+      //Start capture on Thales Reader. Each call is one document side capture or a retry
+      async function startReader(session) {
+        //******************************************
+        //*** STEP 1: Select reader
+        const readerName = document.getElementById("deviceSelector").value;
+        const ok = ThalesThinLib.withSdk.selectReader(
+          null,
+          readerName,
+          "myself"
+        );
+        if (!ok) {
+          alert("No configuration for selected reader");
+        }
+        //Check if a back-side capture is being performed
+        const isBack =
+          ThalesThinLib.withSdk.getState() === ThalesThinLib.ENUM.STATE_BACK;
+        //*** END - Step 1
+
+        //******************************************
+        //*** STEP 2: Start session with IdCloud
+        try {
+          //Start session with IdCloud asynchroneously
+          let startSession = null;
+          if (!session.scenarioId && DO_VERIFICATION) {
+            startSession = startUpploadDocument(
+              SERVER_CROPPING,
+              CAMERA_MODE
+            ).then((backendSes) => {
+              if (backendSes && backendSes.id) {
+                //Store the Scenario ID coming from IDCloud
+                session.scenarioId = backendSes.id;
+                ThalesThinLib.withSdk.setLogData(null, {
+                  key: ThalesThinLib.ENUM.BACKEND_SESSION,
+                  value: session.scenarioId,
+                });
+              }
+            });
+          }
+          //*** END - Step 2
+
+          //******************************************
+          //*** STEP 3: Connect to the reader
+          //Show connecting UI. Note this is a 'dummy UI' function
+          //the actual production intented function to display UIs
+          //should be used at this point
+          await ThalesThinLib.withSdk.errorMessageUi(
+            UiMessages["READER_CONNECTING"],
+            UiNoBtn
+          );
+          //Start capture with reader. It will connect, if needed
+          //It will return a promise if succsesful, otherwise throw an exception with an
+          //error code
+          const r = await ThalesThinLib.withSdk.capture(
+            session, //persistent object
+            ThalesReaderSdkCfg,
+            FALLBACK_POLICY
+          );
+          //Connected message
+          await ThalesThinLib.withSdk.errorMessageUi(
+            UiMessages[r.state], //always ThalesThinLib.ENUM.READER_CONNECTED
+            UiNoBtn
+          );
+          //*** END - Step 3
+
+          //******************************************
+          //*** STEP 4: Wait for capture to be initiated, by user placing the document
+          await r.promise;
+          //At this point, the user should be prompted to place the document in the reader
+          await ThalesThinLib.withSdk.errorMessageUi(
+            UiMessages[
+              isBack ? "READER_CAPTURING_BACK" : "READER_CAPTURING_FRONT"
+            ],
+            UiNoBtn
+          );
+          /* Tasks are a series of Promises
+           start: the reader detected a document and started the capture
+           done: all tasks are completed, all images received
+           first: 1st image downloaded from reader
+           second: 2nd image downloaded from reader, null if not expected
+           third: 3rd image downloaded from reader, null if not expected
+           fourt: 4th image downloaded from reader, null if not expected
+           fifth: 5th image downloaded from reader, null if not expected
+           sixth: 6th image downloaded from reader, null if not expected
+           portrait: photo image extracted, null if not expected
+           barcode: barcode data, null if not expected
+           */
+          const tasks = ThalesThinLib.withSdk.getReaderTasks();
+
+          //*** END - Step 4
+
+          //******************************************
+          //*** STEP 5: Wait for image capture to be performed, user has placed the document
+          await tasks.start;
+          //Indicate that the images are being retrieved from the reader
+          await ThalesThinLib.withSdk.errorMessageUi(
+            UiMessages["READER_DOWNLOADING"],
+            UiNoBtn
+          );
+          tasks.done.then(() => {
+            ThalesThinLib.withSdk.errorMessageUi(
+              UiMessages[ThalesThinLib.ENUM.UPLOADING],
+              UiNoBtn
+            );
+          });
+          //*** END - Step 5
+
+          //******************************************
+          //*** STEP 6: Perform asynchoneously upload
+          //Check and wait for Sesion Start
+          if (!session.scenarioId && !startSession && DO_VERIFICATION) {
+            throw "NO SESSION ERROR";
+          }
+          //If there is a seession, this will resolve as startSession is null
+          await startSession;
+          //Function that waits for an image download from reader
+          //then uploads to IdCloud
+          await uploadDocumentMultiple(report, tasks);
+          //If upload fails and the reader has two cameras, swap sides and try again
+          if (
+            !report.ok &&
+            ThalesThinLib.withSdk.getState() ===
+              ThalesThinLib.ENUM.STATE_DOUBLE_CAMERA
+          ) {
+            ThalesThinLib.withSdk.readerSwapSides();
+            await uploadDocumentMultiple(report, tasks);
+          }
+          //Ensure all iamges are received before proceeding
+          await tasks.done;
+          //Check if more upload attempts available
+          const noAttempts =
+            ThalesThinLib.withSdk.getReaderCaptures().left <= 0;
+          //Indicates that back-side is required but if
+          //double camera device (CR5400i), the back is captured same time as front
+          //Check if back-side upload is required
+          if (report.doBack && !noAttempts) {
+            ThalesThinLib.withSdk.switchSide();
+            ThalesThinLib.withSdk
+              .errorMessageUi(
+                UiMessages[ThalesThinLib.ENUM.CAPTURE_BACK],
+                UiFlip
+              )
+              .then(() => {
+                startReader(session);
+              });
+            //Document wasn't classified and there are still attempts left
+          } else if (!report.ok && !noAttempts) {
+            await ThalesThinLib.withSdk.errorMessageUi(
+              UiMessages[ThalesThinLib.ENUM.ERROR_CLASSIFY],
+              isBack ? UiUploadBack : UiUploadFront
+            );
+            startReader(session);
+          } else {
+            //Call IdCloud verification API, but without blokcing
+            const docVerif = getDocumentVerification(report);
+            //*** END - Step 6
+
+            //******************************************
+            //*** STEP 7: Ask user to verify their face
+            //Ask user to verify the photo image
+            const photoImage = ThalesThinLib.withSdk.getImage(session, "PHOTO");
+            //Do manual face verification while waiting for the verification results
+            let faceVerif = !!photoImage
+              ? manualFaceVerify("data:image/jpeg;base64," + photoImage)
+              : null;
+            //Wait for doc and face verification to be completed
+            await docVerif;
+            //Could change based on policy, here we assume only "Passed" accepted
+            const verifResult =
+              report.result === "Passed"
+                ? ThalesThinLib.ENUM.VERIFICATION_ACCEPTED
+                : ThalesThinLib.ENUM.VERIFICATION_REJECTED;
+            //Record data to track retry of same document and verification retries
+            ThalesThinLib.withSdk.bothSidesDone(
+              null,
+              !report ? null : report.docNumber,
+              !report ? null : report.dateOfBirth,
+              !report ? null : report.expirationDate,
+              verifResult
+            );
+            //If manual face verification not done because there was no photo extracted
+            //from reader, then get it from backend and do at this point
+            if (!faceVerif && report && report.portrait) {
+              faceVerif = manualFaceVerify(
+                "data:image/jpeg;base64," + report.portrait
+              );
+            }
+            await faceVerif;
+            //*** END - Step 7
+
+            //******************************************
+            //*** STEP 8: End reader session and show results or retry
+            //Ask to remove document first to be sure it is not left in reader
+            await ThalesThinLib.withSdk.errorMessageUi(
+              UiMessages["READER_REMOVE"],
+              UiReaderRemoveDoc
+            );
+            ThalesThinLib.withSdk.endReaderSession();
+            const verifRetry =
+              ThalesThinLib.withSdk.getDocumentVerification().left > 0 ||
+              ThalesThinLib.withSdk.getDocumentVerification().result ===
+                ThalesThinLibConfig.ENUM.VERIFICATION_ACCEPTED;
+            if (verifRetry) {
+              //If verification retries, start from the beginning
+              await ThalesThinLib.withSdk.errorMessageUi(
+                UiMessages["VERIFY_AGAIN"],
+                UiBtn
+              );
+              openCamera();
+            } else {
+              showResults(report);
+            }
+            //*** END - Step 8
+          }
+        } catch (code) {
+          //******************************************
+          //*** STEP 9: Hanlde errors
+          console.log("Capture failed: " + code);
+          //READER_CONNECTION_NOT_SETUP: exceptional cases where there is no configuration done
+          if (code === ThalesThinLib.ENUM.READER_CONNECTION_FAILED_APIKEY) {
+            //READER_CONNECTION_FAILED_APIKEY: authentication to reader failed
+            //Thales Reader failed to authenticate the client
+            ThalesThinLib.withSdk
+              .errorMessageUi(
+                UiMessages["READER_AUTH_FAILURE"],
+                UiReaderAuthFailure
+              )
+              .then(() => {
+                //Reload to allow user to enter API ID/Key again
+                showStart();
+              });
+          } else if (code === ThalesThinLib.ENUM.READER_CONNECTION_FALLBACK) {
+            //READER_CONNECTION_FALLBACK: SDK is asking for fallback
+            //Show that connection failed
+            ThalesThinLib.withSdk
+              .errorMessageUi(
+                UiMessages[ThalesThinLib.ENUM.READER_CONNECTION_FAILED],
+                UiReaderAutoDiscover
+              )
+              .then((doDiscover) => {
+                if (doDiscover) {
+                  //Confirm IP should be discovered via scanning as this can take a while
+                  ThalesThinLib.withSdk
+                    .errorMessageUi(UiMessages["READER_IP_SCAN"], UiNoBtn)
+                    .then(() => {
+                      //SDK will try to find IP
+                      ThalesThinLib.withSdk
+                        .findReaderIp(null, ThalesReaderSdkCfg)
+                        .then((conn) => {
+                          //SDK will inform if successful or not
+                          //but in either case a retry should be performed
+                          //for simplicity of flow as nothing more to do
+                          ThalesThinLib.withSdk
+                            .errorMessageUi(UiMessages[conn], UiReaderRetry)
+                            .then(() => {
+                              startReader(session);
+                            });
+                        });
+                    });
+                } else {
+                  startReader(session);
+                }
+              });
+          } else if (code === ThalesThinLib.ENUM.READER_FATAL_ERROR) {
+            //READER_FATAL_ERROR: SDK is saying that there is no recovery, end flow
+            ThalesThinLib.withSdk
+              .errorMessageUi(UiMessages[code], UiBtn)
+              .then(() => {
+                //A generic error message can be shown to the user then redirected to the beginning
+                //for test purposes, the results are shown with errors to be able also to view logs
+                //or other information
+                showResults(report);
+              });
+          } else if (code === ThalesThinLib.ENUM.READER_SERIAL_MODEL_MISMATCH) {
+            //READER_SERIAL_MODEL_MISMATCH: SDK is saying that the connected serial/model doesn't match with config
+            ThalesThinLib.withSdk
+              .errorMessageUi(UiMessages[code], UiReaderRetry)
+              .then(() => {
+                startReader(session);
+              });
+          } else {
+            //Rest: The SDK will give an error code as ThalesThinLib.ENUM.READER_XXXX
+            //For now it would be one of the two:
+            //READER_CAPTURE_FAILED: there was an error during capturing
+            //READER_CONNECTION_FAILED: there was an error to connect to the reader
+            //to future proof, add also a generic errror message
+            let errMsg = UiMessages[code]
+              ? UiMessages[code]
+              : "Something went wrong";
+            //At this stage, the SDK will generate a human displayable error code
+            const errCode = ThalesThinLib.withSdk.getReaderErrorCode();
+            if (errCode) {
+              errMsg += " [" + errCode + "]";
+            }
+            //Retry catpure. Note that this is not READER_FATAL_ERROR
+            //the SDK still has attempts left on the session
+            ThalesThinLib.withSdk
+              .errorMessageUi(errMsg, UiRetakeImage)
+              .then(() => {
+                startReader(session);
+              });
+          }
+        }
+      }
+      //END - startReader
+
+      function manualFaceVerify(img) {
+        return new Promise((verDone) => {
+          UiPhotoSelect.imageSrc = img;
+          ThalesThinLib.withSdk
+            .errorMessageUi("?", UiPhotoSelect)
+            .then((select) => {
+              //Save the result
+              report.faceOk = select;
+              //Indicate that the verification is in process
+              //as getDocumentVerification() may not have resolved yet
+              ThalesThinLib.withSdk
+                .errorMessageUi(UiMessages["VERIFICATION"], UiNoBtn)
+                .then(() => {
+                  verDone();
+                });
+            });
+        });
+      }
+
+      async function startCameraWithPermissions(session, isFace, faceAndDoc) {
+        let perm = await ThalesThinLib.cameraUtils.checkPermissions();
+        if (perm === ThalesThinLib.ENUM.CAMERA_PERMISSIONS_GRANTED) {
+          startCamera(session, isFace, faceAndDoc);
+        } else if (
+          perm === ThalesThinLib.ENUM.CAMERA_PERMISSIONS_DENIED &&
+          ThalesThinLib.platform() !== ThalesThinLib.ENUM.IOS
+        ) {
+          //Android only supports user enablement form URL icons
+          await ThalesThinLib.withSdk.errorMessageUi(
+            "Enable camera from URL bar",
+            UiBtn
+          );
+          startCameraWithPermissions(session, isFace, faceAndDoc);
+        } else {
+          //Inform user that they will be prompted, only if explicitly that is the result
+          if (perm === ThalesThinLib.ENUM.CAMERA_PERMISSIONS_PROMPT) {
+            await ThalesThinLib.withSdk.errorMessageUi(
+              "Please Accept permissions",
+              UiBtn
+            );
+          }
+          //The user needs to grant permissions or the query permission API wasn't supported
+          //and we don't know the status
+          perm = await ThalesThinLib.cameraUtils.getPermissions();
+          if (perm === ThalesThinLib.ENUM.CAMERA_PERMISSIONS_GRANTED) {
+            startCamera(session, isFace, faceAndDoc);
+          } else {
+            await ThalesThinLib.withSdk.errorMessageUi(
+              "Camera access is required!",
+              UiBtn
+            );
+            showStart();
+          }
+        }
+      }
+
+      //Initiate capture
+      function openCamera() {
+        const isFace = MODE === "FACE_ONLY";
+        const faceAndDoc = MODE === "FACE_AND_DOC";
+        //Starts a new session
+        session = ThalesThinLib.withSdk.newSession(session);
+        sessionFace = ThalesThinLib.withSdk.newSession(sessionFace);
+        //Branching for this demo page
+        if (DO_READER) {
+          startReader(session);
+        } else {
+          startCameraWithPermissions(
+            isFace ? sessionFace : session,
+            isFace,
+            faceAndDoc
+          );
+        }
+        //Used to track results, not used by ThalesThinLib in any way
+        report = { sensitive: {} };
+      }
+
+      //Display results
+      function showResults(report) {
+        try {
+          ThalesThinLib.withSdk.errorMessageUi(null);
+
+          let finalResult = "N/A";
+          let finalAuth = "";
+          let finalAuthTamper = "";
+          let finalFaceAuth = "N/A";
+          let finalFaceScore = "";
+          let classification = "";
+          let scenarioId = "";
+          let capture = "";
+          let connectTime = "N/A";
+          let uploadTime = "";
+          let uploadSize = "";
+          let glare = "";
+          let sharpness = "";
+          let dpi = "";
+          let docNumber = "";
+          let fullName = "";
+          lastFullName = "Client";
+          let expirationDate = "";
+          let dateOfBirth = "";
+          let barcodeText = "";
+          let imageDocument = new Image();
+          imageDocument.style.width = "100%";
+          imageDocument.style.height = "100%";
+          imageDocument.style.objectFit = "contain";
+          imageDocument.alt = "No Image";
+          let imageDocumentBack = new Image();
+          imageDocumentBack.style.width = "100%";
+          imageDocumentBack.style.height = "100%";
+          imageDocumentBack.style.objectFit = "contain";
+          imageDocumentBack.alt = "No Image";
+          let imagePortrait = new Image();
+          imagePortrait.style.width = "100%";
+          imagePortrait.style.height = "100%";
+          imagePortrait.style.objectFit = "contain";
+          imagePortrait.alt = "No Image";
+          lastUvImage = null;
+          let imageDocumentIr = new Image();
+          imageDocumentIr.style.width = "100%";
+          imageDocumentIr.style.height = "100%";
+          imageDocumentIr.style.objectFit = "contain";
+          imageDocumentIr.alt = "No Image";
+          let imageDocumentBackIr = new Image();
+          imageDocumentBackIr.style.width = "100%";
+          imageDocumentBackIr.style.height = "100%";
+          imageDocumentBackIr.style.objectFit = "contain";
+          imageDocumentBackIr.alt = "No Image";
+          let imageDocumentUv = new Image();
+          imageDocumentUv.style.width = "100%";
+          imageDocumentUv.style.height = "100%";
+          imageDocumentUv.style.objectFit = "contain";
+          imageDocumentUv.alt = "No Image";
+          let imageDocumentBackUv = new Image();
+          imageDocumentBackUv.style.width = "100%";
+          imageDocumentBackUv.style.height = "100%";
+          imageDocumentBackUv.style.objectFit = "contain";
+          imageDocumentBackUv.alt = "No Image";
+          let imagFace = new Image();
+          imagFace.style.width = "100%";
+          imagFace.style.height = "100%";
+          imagFace.style.objectFit = "contain";
+          imagFace.alt = "No Image";
+          imagFace.style.maxHeight = "200px";
+          let pdfLink = "N/A";
+          let logLink1 = "N/A";
+          let logLink3 = "N/A";
+          let logLink5 = "N/A";
+          let imgSettings = "N/A";
+          let detections = "";
+          let autoDetections = "";
+          let checkColorImg = new Image();
+          checkColorImg.style.width = "100%";
+          checkColorImg.style.height = "100%";
+          checkColorImg.style.objectFit = "contain";
+          checkColorImg.alt = "No Image";
+
+          const log = ThalesThinLib.withSdk.getLog(session);
+          const logFace = ThalesThinLib.withSdk.getLog(sessionFace);
+          const captureDetail = DO_SMART_CAPTURE
+            ? "Uploads: " + log.smartCapture.frontUploads
+            : log.captureMode;
+          const captureDetailBack = DO_SMART_CAPTURE
+            ? "Uploads: " + log.smartCapture.backUploads
+            : log.captureModeBack;
+          if (log) {
+            capture =
+              "Front: " +
+              captureDetail +
+              " in " +
+              (log.captureTime / 1000).toFixed(2) +
+              "secs";
+            if (log.captureModeBack && log.captureTimeBack) {
+              capture +=
+                " / Back: " +
+                captureDetailBack +
+                " in " +
+                (log.captureTimeBack / 1000).toFixed(2) +
+                "secs";
+            }
+            if (logFace) {
+              capture +=
+                " / Face: " +
+                logFace.captureMode +
+                " in " +
+                (logFace.captureTime / 1000).toFixed(2) +
+                "secs";
+            }
+            if (DO_READER) {
+              connectTime = (log.connectTime / 1000).toFixed(2) + "secs";
+              if (log.connectTimeBack > 0) {
+                connectTime +=
+                  " / " + (log.connectTimeBack / 1000).toFixed(2) + "secs";
+              }
+            }
+            const avgAutoDetect =
+              log.autoDetection && log.autoDetection.count > 0
+                ? (log.autoDetection.end - log.autoDetection.start) /
+                  log.autoDetection.count
+                : null;
+            const avgAutoDetectBack =
+              log.autoDetectionBack && log.autoDetectionBack.count > 0
+                ? (log.autoDetectionBack.end - log.autoDetectionBack.start) /
+                  log.autoDetectionBack.count
+                : null;
+            const lostFocus = log.autoDetection
+              ? log.autoDetection.lostFocus
+              : 0;
+            const lostFocusBack = log.autoDetectionBack
+              ? log.autoDetection.lostFocus
+              : 0;
+            autoDetections =
+              "Front: " +
+              (avgAutoDetect / 1000).toFixed(2) +
+              "secs, " +
+              lostFocus +
+              " lost focus";
+            if (avgAutoDetectBack) {
+              autoDetections +=
+                " / Back: " +
+                (avgAutoDetectBack / 1000).toFixed(2) +
+                "secs, " +
+                lostFocusBack +
+                " lost focus";
+            }
+            const barcode = ThalesThinLib.withSdk.getBarcode(session, false);
+            if (barcode) {
+              const barcodeLog = log.bestBarcodeLog
+                ? " [ " + log.bestBarcodeLog.split("#")[1] + "]"
+                : "";
+              barcodeText = barcodeLog + barcode;
+              if (DO_READER) {
+                const aamva = ThalesThinLib.withSdk.getBarcode(
+                  session,
+                  false,
+                  true
+                );
+                if (aamva) {
+                  barcodeText += "<br>" + JSON.stringify(aamva);
+                }
+              }
+            }
+            if (log.faceDetect) {
+              detections = "Front: ";
+              log.faceDetect.score.toFixed(2) +
+                " (" +
+                log.faceDetect.result +
+                ")";
+              if (log.faceDetectBack) {
+                detections +=
+                  " / Back: " +
+                  log.faceDetectBack.score.toFixed(2) +
+                  " (" +
+                  log.faceDetectBack.result +
+                  ")";
+              }
+            }
+          }
+          const docOK =
+            report.ok || report.ok === undefined
+              ? "OK"
+              : ThalesThinLib.withSdk.getError(session).worst;
+          const faceOk =
+            report.faceOk || report.faceOk === undefined
+              ? "OK"
+              : report.faceError;
+          finalResult =
+            docOK === "OK" && faceOk === "OK"
+              ? "OK"
+              : faceOk !== "OK" && docOK !== "OK"
+              ? docOK + " / " + faceOk
+              : docOK === "OK" && faceOk !== "OK"
+              ? faceOk
+              : docOK;
+          finalAuth = report.result || "";
+          finalAuthTamper = report.tamperRes || "";
+          finalFaceAuth = report.faceError;
+          finalFaceScore = report.faceLiveScore + " / " + report.faceMatchScore;
+          classification = report.classification || "";
+          if (log && log.isUncropped) {
+            classification += " [server crop]";
+          }
+          scenarioId = session.scenarioId || "";
+          docNumber = report.docNumber || "";
+          fullName = report.fullName || "";
+          lastFullName = !!fullName ? fullName : lastFullName;
+          expirationDate = report.expirationDate || "";
+          dateOfBirth = report.dateOfBirth || "";
+          uploadTime = "Upload Front: " + report.uploadTime;
+          if (report.uploadTimeBack) {
+            uploadTime += " / Back: " + report.uploadTimeBack;
+          }
+          if (report.uploadTimeIR) {
+            uploadTime += " / Back: " + report.uploadTimeIR + " (IR)";
+          }
+          if (report.uploadTimeIRBack) {
+            uploadTime += " / Back: " + report.uploadTimeIRBack + " (IR)";
+          }
+          if (report.uploadTimeUV) {
+            uploadTime += " / Back: " + report.uploadTimeUV + " (UV)";
+          }
+          if (report.uploadTimeUVBack) {
+            uploadTime += " / Back: " + report.uploadTimeUVBack + " (UV)";
+          }
+          if (report.uploadTimeFace) {
+            uploadTime += " / Face: " + report.uploadTimeFace;
+          }
+          uploadSize = "Size Front: " + report.uploadSize;
+          if (report.uploadSizeBack) {
+            uploadSize += " / Back: " + report.uploadSizeBack;
+          }
+          if (report.uploadSizeIR) {
+            uploadSize += " / Back: " + report.uploadSizeIR + " (IR)";
+          }
+          if (report.uploadSizeIRBack) {
+            uploadSize += " / Back: " + report.uploadSizeIRBack + " (IR)";
+          }
+          if (report.uploadSizeUV) {
+            uploadSize += " / Back: " + report.uploadSizeUV + " (UV)";
+          }
+          if (report.uploadSizeUVBack) {
+            uploadSize += " / Back: " + report.uploadSizeUVBack + " (UV)";
+          }
+          if (report.uploadSizeFace) {
+            uploadSize += " / Face: " + report.uploadSizeFace;
+          }
+          const fImg = ThalesThinLib.withSdk.getImage(session, "FRONT");
+          const bImg = ThalesThinLib.withSdk.getImage(session, "BACK");
+          const fImgIr = !DO_READER
+            ? null
+            : ThalesThinLib.withSdk.getImage(session, "FRONT", "IR");
+          const bImgIr = !DO_READER
+            ? null
+            : ThalesThinLib.withSdk.getImage(session, "BACK", "IR");
+          const fImgUv = !DO_READER
+            ? null
+            : ThalesThinLib.withSdk.getImage(session, "FRONT", "UV");
+          const bImgUv = !DO_READER
+            ? null
+            : ThalesThinLib.withSdk.getImage(session, "BACK", "UV");
+          const faceImg =
+            MODE !== "FACE_ONLY" && MODE !== "FACE_AND_DOC"
+              ? null
+              : ThalesThinLib.withSdk.getImage(sessionFace);
+          const fDetails = ThalesThinLib.withSdk.getResultDetails(
+            session,
+            "FRONT"
+          );
+          const bDetails = ThalesThinLib.withSdk.getResultDetails(
+            session,
+            "BACK"
+          );
+
+          if (fImg) {
+            imageDocument.src = "data:image/jpeg;base64," + fImg || "";
+            sharpness =
+              fDetails && !DO_SMART_CAPTURE
+                ? fDetails.sharpness
+                : report.backendSharpness
+                ? report.backendSharpness
+                : "N/A";
+            glare =
+              fDetails && !DO_SMART_CAPTURE
+                ? fDetails.glare
+                : report.backendGlare
+                ? report.backendGlare
+                : "N/A";
+            dpi =
+              fDetails && !DO_SMART_CAPTURE
+                ? fDetails.dpi
+                : report.backendDpi
+                ? report.backendDpi
+                : "N/A";
+            if (bImg) {
+              imageDocumentBack.src = "data:image/jpeg;base64," + bImg || "";
+              sharpness +=
+                bDetails && !DO_SMART_CAPTURE
+                  ? " / " + bDetails.sharpness
+                  : report.backendSharpnessBack
+                  ? " / " + report.backendSharpnessBack
+                  : "";
+              glare +=
+                bDetails && !DO_SMART_CAPTURE
+                  ? " / " + bDetails.glare
+                  : report.backendGlareBack
+                  ? " / " + report.backendGlareBack
+                  : "";
+              dpi +=
+                bDetails && !DO_SMART_CAPTURE
+                  ? " / " + bDetails.dpi
+                  : report.backendDpiBack
+                  ? " / " + report.backendDpiBack
+                  : "";
+            }
+          }
+          if (fImgIr) {
+            imageDocumentIr.src = "data:image/jpeg;base64," + fImgIr || "";
+            if (bImgIr) {
+              imageDocumentBackIr.src =
+                "data:image/jpeg;base64," + bImgIr || "";
+            }
+          }
+          if (fImgUv) {
+            imageDocumentUv.src = "data:image/jpeg;base64," + fImgUv || "";
+            if (bImgUv) {
+              imageDocumentBackUv.src =
+                "data:image/jpeg;base64," + bImgUv || "";
+            }
+          }
+          if (faceImg) {
+            imagFace.src = "data:image/jpeg;base64," + faceImg || "";
+          }
+          if (log && log.checkColor && log.checkColor.image) {
+            checkColorImg.src = log.checkColor.image;
+            log.checkColor.image = undefined; //remove for convinience
+          }
+          if (report && report.portrait) {
+            imagePortrait.src = "data:image/jpeg;base64," + report.portrait;
+            lastPortrait = report.portrait;
+          }
+
+          let reportLogs = ThalesThinLib.withSdk.getLog(session, null, true);
+          if (
+            reportLogs &&
+            reportLogs.readerLogs &&
+            reportLogs.readerLogs.device
+          ) {
+            //The logs of the Thales Reader device
+            const log1 =
+              reportLogs.readerLogs.device[ThalesThinLib.ENUM.READER_LOG_APP];
+            if (log1 && log1.log) {
+              const content = ThalesThinLib.decodeBase64(log1.log);
+              const blob = new Blob([content], { type: "application/zip" });
+              logLink1 = document.createElement("a");
+              const href = URL.createObjectURL(blob);
+              const filename = "ThalesReaderAPP_" + log1.time + ".zip";
+              logLink1.setAttribute("href", href);
+              logLink1.setAttribute("download", filename);
+              logLink1.innerHTML = "Application Logs";
+            }
+            const log5 =
+              reportLogs.readerLogs.device[ThalesThinLib.ENUM.READER_LOG_INFO];
+            if (log5) {
+              const content = JSON.stringify(log5.log, null, 2);
+              const blob = new Blob([content], { type: "text/plain" });
+              logLink5 = document.createElement("a");
+              const href = URL.createObjectURL(blob);
+              const filename = "ThalesReaderInfo_" + log5.time + ".json";
+              logLink5.setAttribute("href", href);
+              logLink5.setAttribute("download", filename);
+              logLink5.innerHTML = "Reader Device Info";
+            }
+            const sets =
+              reportLogs.readerLogs.device[
+                ThalesThinLib.ENUM.READER_LOG_SETTINGS
+              ];
+            if (sets) {
+              imgSettings = "Debarrel: " + sets.debarrel + " # ";
+              imgSettings +=
+                "Exposure/Gamma/Brighness # White: " +
+                sets.white.exposure +
+                "/" +
+                sets.white.gamma +
+                "/" +
+                sets.white.brightness;
+              imgSettings +=
+                ", IR: " +
+                sets.ir.exposure +
+                "/" +
+                sets.ir.gamma +
+                "/" +
+                sets.ir.brightness;
+              imgSettings +=
+                ", UV: " +
+                sets.uv.exposure +
+                "/" +
+                sets.uv.gamma +
+                "/" +
+                sets.uv.brightness;
+            }
+          }
+          if (log) {
+            const content = JSON.stringify(log, null, 2);
+            const blob = new Blob([content], { type: content });
+            logLink3 = document.createElement("a");
+            const href = URL.createObjectURL(blob);
+            const filename =
+              "ThalesReaderSession_" +
+              new Date().toLocaleTimeString() +
+              ".json";
+            logLink3.setAttribute("href", href);
+            logLink3.setAttribute("download", filename);
+            logLink3.innerHTML = "Session Logs";
+          }
+          if (report.pdf) {
+            const content = ThalesThinLib.decodeBase64(report.pdf);
+            const blob = new Blob([content], { type: "application/pdf" });
+            pdfLink = document.createElement("a");
+            const href = URL.createObjectURL(blob);
+            const filename = "IDV_" + new Date().toLocaleTimeString() + ".pdf";
+            pdfLink.setAttribute("href", href);
+            pdfLink.setAttribute("download", filename);
+            pdfLink.innerHTML = "Verification Report";
+          }
+          tables = [];
+          //Final Report to be downloaded
+          const downReport = JSON.parse(JSON.stringify(report));
+          downReport.doBack = undefined; //remove some unecessary data
+          downReport.pdf = undefined;
+          downReport.docNumber = undefined;
+          downReport.fullName = undefined;
+          downReport.expirationDate = undefined;
+          downReport.dateOfBirth = undefined;
+          if (REPORT_IS_SENSITIVE) {
+            downReport.sensitive.frontWhiteImage = fImg;
+            downReport.sensitive.backWhiteIMage = bImg;
+            downReport.sensitive.frontIrImage = fImgIr;
+            downReport.sensitive.backIrImage = bImgIr;
+            downReport.sensitive.frontUvImage = fImgUv;
+            downReport.sensitive.backUvImage = bImgUv;
+            downReport.sensitive.faceImage = faceImg;
+          } else {
+            downReport.sensitive.fields = undefined;
+          }
+          if (REPORT_CONSOLE_LOGS) {
+            downReport.consoleLogs = document.getElementById("logger").value;
+          }
+          const jBlob = new Blob([JSON.stringify(downReport)], {
+            type: "application/json",
+          });
+          const fLink = document.createElement("a");
+          fLink.setAttribute("href", URL.createObjectURL(jBlob));
+          fLink.setAttribute(
+            "download",
+            "Deltaresults_" + new Date().toLocaleTimeString() + ".json"
+          );
+          fLink.innerHTML = "Report";
+          tables.push({
+            header: ["Report"],
+            rows: [{ cols: [fLink] }],
+          });
+
+          //Final table built
+          tables.push({
+            header: ["Document Authentication"],
+            rows: [
+              {
+                cols: ["Result", finalResult],
+              },
+              {
+                cols: ["Base Document Authentication", finalAuth],
+              },
+              {
+                cols: ["Document Tampering Detection", finalAuthTamper],
+              },
+              {
+                cols: ["Document Classification", classification],
+              },
+              {
+                cols: ["Face Verification", finalFaceAuth],
+              },
+              {
+                cols: ["Face Match / Liveness Score", finalFaceScore],
+              },
+              {
+                cols: [
+                  "IdCloud Session ID",
+                  scenarioId + " (" + CAMERA_MODE + ")",
+                ],
+              },
+              {
+                cols: ["Upload Time", uploadTime],
+              },
+              {
+                cols: ["Auto Detection", autoDetections],
+              },
+              {
+                cols: ["Image Size", uploadSize],
+              },
+              {
+                cols: ["Sharpness (Front / Back)", sharpness],
+              },
+              {
+                cols: ["Glare (Front / Back)", glare],
+              },
+              {
+                cols: ["Resolution/DPI (Front / Back)", dpi],
+              },
+              {
+                cols: ["Image Capture", capture],
+              },
+              {
+                cols: ["Face Detect on Document", detections],
+              },
+              {
+                cols: ["Connect Time (Reader)", connectTime],
+              },
+              {
+                cols: ["Image Settings (Reader)", imgSettings],
+              },
+              {
+                cols: ["Barcode (local)", barcodeText],
+              },
+              {
+                cols: log.checkColor
+                  ? ["Check Color", JSON.stringify(log.checkColor, null, 2)]
+                  : undefined,
+              },
+            ],
+          });
+          tables.push({
+            header: ["Data Extraction"],
+            rows: [
+              {
+                cols: ["Full Name", fullName],
+              },
+              {
+                cols: ["Date of Birth", dateOfBirth],
+              },
+              {
+                cols: ["Document Number", docNumber],
+              },
+              {
+                cols: ["Expiration Date", expirationDate],
+              },
+            ],
+          });
+          tables.push({
+            header: ["Images"],
+            rows: [
+              {
+                cols: ["Front-side", imageDocument],
+              },
+              {
+                cols: ["Back-side", imageDocumentBack],
+              },
+              {
+                cols: ["Selfie", imagFace],
+              },
+              {
+                cols: !DO_READER
+                  ? undefined
+                  : ["Front-side Infrared", imageDocumentIr],
+              },
+              {
+                cols: !DO_READER
+                  ? undefined
+                  : ["Back-side Infrared", imageDocumentBackIr],
+              },
+              {
+                cols: !DO_READER
+                  ? undefined
+                  : ["Front-side Ultraviolet", imageDocumentUv],
+              },
+              {
+                cols: !DO_READER
+                  ? undefined
+                  : ["Back-side Ultraviolet", imageDocumentBackUv],
+              },
+              {
+                cols: ["Document Photo", imagePortrait],
+              },
+              {
+                cols: !checkColorImg.src
+                  ? undefined
+                  : ["Check Color", checkColorImg],
+              },
+            ],
+          });
+          tables.push({
+            header: ["Logs and Reports"],
+            rows: [
+              {
+                cols: ["PDF Verification Report", pdfLink],
+              },
+              {
+                cols: ["Session Logs", logLink3],
+              },
+              {
+                cols: ["Reader Application Logs", logLink1],
+              },
+              {
+                cols: ["Reader Device Info", logLink5],
+              },
+            ],
+          });
+          tables.push({
+            header: ["Security Tests"],
+            rows: report && report.alerts ? report.alerts : null,
+          });
+          tables.push({
+            header: ["All Extracted Data"],
+            rows:
+              report && report.sensitive && report.sensitive.fields
+                ? report.sensitive.fields
+                : null,
+          });
+
+          makeTable(tables, document.getElementById("restable"));
+          if (!DO_VERIFICATION) {
+            updateText("Images captured");
+            showOK();
+          } else if (report.ok !== false && report.faceOk !== false) {
+            updateText(
+              lastFullName + " has been verified!",
+              "Verification Completed"
+            );
+            showOK();
+          } else {
+            updateText(
+              "The person's identity couldn't be verified. Try again!",
+              "Verification Failed"
+            );
+            showNOK();
+          }
+
+          if (window.AndroidNativeInterface) {            
+            try {
+              const imgFace = ThalesThinLib.withSdk.getImage(null, "FACE") + "";
+              const error = ThalesThinLib.withSdk.getError().last;
+              window.AndroidNativeInterface.setFaceImage("", imgFace);
+              window.AndroidNativeInterface.setResult(!error ? "SUCCESS" : error);
+            } catch (e) {
+              try {
+                window.AndroidNativeInterface.setResult("INTERFACE_ERROR");
+                window.AndroidNativeInterface.updateLogs("Interface Error: " + e + "\n");
+              } catch (err) {
+                console.log("Interface Bad Error: " + err);
+              }
+            }
+          }
+        } catch (e) {
+          alert("Demo Error: populating results screen.");
+          console.log("showResults: " + e);
+        }
+      }
+
+      //-----------------------------
+      //------------ END ------------
+      //-----------------------------
+
+      //-----------------------------------------
+      //----------- WEB API FUNCTIONS -----------
+      //-----------------------------------------
+      //Thales IdCloud functions
+      async function startUpploadDocument(cropping, mode) {
+        return new Promise(async (resolve, reject) => {
+          console.log("Staring upload session...");
+          const idcUrl =
+            "https://fake-bank-demo.rnd.gemaltodigitalbankingidcloud.com";
+          const idcScenario =
+            MODE === "FACE_AND_DOC"
+              ? "Connect_Verify_Document_Face_Passive_Liveness"
+              : "Connect_Verify_Document";
+          const version = 2;
+          const id = await idcPost(
+            idcUrl,
+            Credential.USER_PROXY,
+            Credential.PASS_PROXY,
+            idcScenario,
+            version,
+            ThalesThinLib.withSdk.getLog(null, true),
+            {
+              captureMethod: mode,
+              croppingMode: cropping ? "Always" : "None",
+            }
+          );
+          //resolve(id + "#" + token);
+          resolve(id);
+        });
+      }
+      async function uploadDocumentMultiple(report, tasks) {
+        async function upload(readerTask, report) {
+          console.log("[uploadDocumentMultiple] Checking next task...");
+          const task = await readerTask;
+          if (!task || !task.type) {
+            console.log("[uploadDocumentMultiple] No task");
+            return;
+          }
+          if (task.isCropped === false) {
+            console.log("[uploadDocumentMultiple] Image not cropped");
+            report.ok = false;
+            return;
+          }
+          const opt = {
+            isIr: task.type === "IR",
+            isUv: task.type === "UV",
+          };
+          //Skip if UV/IR verification is not enabled
+          if (!DO_VERIFICATION_UV_IR && (opt.isIr || opt.isUv)) {
+            console.log(
+              "[uploadDocumentMultiple] Task found, but shouldn't be uploaded"
+            );
+            return;
+          }
+          console.log("[uploadDocumentMultiple] Uploading next image...");
+          //Upload 1 image
+          await uploadDocument(report, opt);
+          console.log("[uploadDocumentMultiple] Done");
+        }
+        //Upload all tasks
+        await upload(tasks.first, report);
+        await upload(tasks.second, report);
+        await upload(tasks.third, report);
+        await upload(tasks.fourth, report);
+        await upload(tasks.fifth, report);
+        await upload(tasks.sixth, report);
+      }
+
+      function uploadDocument(report, options) {
+        const idcUrl =
+          "https://fake-bank-demo.rnd.gemaltodigitalbankingidcloud.com";
+        const idcScenario =
+          MODE === "FACE_AND_DOC"
+            ? "Connect_Verify_Document_Face_Passive_Liveness"
+            : "Connect_Verify_Document";
+        const isUv = options && options.isUv;
+        const isIr = options && options.isIr;
+        return new Promise(async (resolve, reject) => {
+          const isBack =
+            ThalesThinLib.withSdk.getState(session) ===
+            ThalesThinLib.ENUM.STATE_BACK;
+          if (!DO_VERIFICATION) {
+            report.ok = true;
+            report.doBack = !isBack;
+            report.result = "Skipped";
+            resolve(report);
+            return;
+          }
+          if (!session.scenarioId) {
+            report.ok = false;
+            report.doBack = !isBack;
+            report.result = "No Session";
+            resolve(report);
+            return;
+          }
+          //Get image, taking into account the scenario it can be a UV or IM images
+          const light = isUv ? "UV" : isIr ? "IR" : "White";
+          const side = !isBack ? "front" : "back";
+          const image =
+            options && options.image
+              ? options.image
+              : ThalesThinLib.withSdk.getImage(session, side, light);
+          if (!image) {
+            //skip
+            resolve(report);
+            return;
+          }
+          console.log("Uploading...");
+          let start = Date.now();
+          let sideParam = isBack ? "backWhiteImage" : "frontWhiteImage";
+          let sideReport = isBack ? "uploadTimeBack" : "uploadTime";
+          let sideReportSize = isBack ? "uploadSizeBack" : "uploadSize";
+          if (isUv) {
+            sideParam = isBack ? "backUVImage" : "frontUVImage";
+            sideReport = isBack ? "uploadTimeUVBack" : "uploadTimeUV";
+            sideReportSize = isBack ? "uploadSizeUVBack" : "uploadSizeUV";
+          } else if (isIr) {
+            sideParam = isBack ? "backIRImage" : "frontIRImage";
+            sideReport = isBack ? "uploadTimeIRBack" : "uploadTimeIR";
+            sideReportSize = isBack ? "uploadSizeIRBack" : "uploadSizeIR";
+          }
+          let input = {};
+          input[sideParam] = image;
+          let res = await idcPatch(
+            session.scenarioId,
+            idcUrl,
+            Credential.USER_PROXY,
+            Credential.PASS_PROXY,
+            idcScenario,
+            sideParam,
+            input
+          );
+          let elapsed = Date.now() - start;
+          console.log("Upload time: " + (elapsed / 1000).toFixed(2) + " sec");
+          report[sideReport] = (elapsed / 1000).toFixed(2) + " sec";
+          report[sideReportSize] =
+            ((image.length * (2 / 3)) / 1024).toFixed(2) + " kb";
+          //Consider UV/IR optional, in the context of edge case scenarios that uplaod fails
+          if (isUv || isIr) {
+            //do nothing, let white image decide results
+            resolve(report);
+            return;
+          }
+          try {
+            if (res.state.result.object.presentationChanged) {
+              sideParam = !isBack ? "backWhiteImage" : "frontWhiteImage";
+            }
+            report.ok =
+              !!res.state.result.object[sideParam] &&
+              !res.state.result.object[sideParam].IsGeneric;
+            report.classification = res.state.result.object.classification.Name;
+            const metrics = res.state.result.object.metrics;
+            if (metrics) {
+              report[isBack ? "backendDpiBack" : "backendDpi"] = Math.min(
+                metrics.HorizontalResolution,
+                metrics.VerticalResolution
+              );
+              report[isBack ? "backendGlareBack" : "backendGlare"] =
+                metrics.GlareMetric;
+              report[isBack ? "backendSharpnessBack" : "backendSharpness"] =
+                metrics.SharpnessMetric;
+            }
+            let supSides =
+              res.state.result.object.classification.SupportedImages;
+            let backSupported = false;
+            for (let sl in supSides) {
+              if (supSides[sl].Light === 0 && supSides[sl].Side === 1) {
+                backSupported = true;
+                break;
+              }
+            }
+            console.log("Back is supported: " + backSupported);
+            report.doBack = backSupported && !isBack && report.ok;
+            if (!report.ok) {
+              console.log("Classification failed");
+              resolve(report);
+              return;
+            }
+            console.log("Document is classified!");
+          } catch (e) {
+            console.log("Classification response exception: " + e);
+            report.ok = false;
+            report.result = "API_ERROR";
+            alert(
+              "Temporarily DEMO backend error. You may have to refresh the page"
+            );
+          }
+          //Get barcode from session
+          const barcode = ThalesThinLib.withSdk.getBarcode();
+          //Check if document supports barcode
+          if (DO_BARCODE && !barcode) {
+            if (
+              (res.state.result.object.classification
+                .ReferenceDocumentDataTypes &&
+                res.state.result.object.classification
+                  .ReferenceDocumentDataTypes[0] === 0 &&
+                isBack) ||
+              (state.result.object.classification.DocumentDataTypes &&
+                state.result.object.classification.DocumentDataTypes[0] === 0 &&
+                !isBack)
+            ) {
+              try {
+                window.AcuantCameraCustomBarcode();
+                const bres = await ThalesThinLib.withSdk.capture(
+                  null,
+                  ThalesBarcodeConfig
+                );
+                await bres.promise;
+                barcode = ThalesThinLib.withSdk.getBarcode();
+                let log = ThalesThinLib.withSdk.getLog().bestBarcodeLog;
+              } catch (err) {
+                console.log("Barcode skipped: " + err);
+              }
+            }
+          }
+          if (DO_BARCODE_UPLOAD && barcode) {
+            console.log("Sending local barcode");
+            const barRes = await uploadBarcode(barcode);
+            if (!barRes) {
+              alert("Barcode upload failure, but continuing...");
+            }
+          }
+          resolve(report);
+        });
+      }
+
+      function getDocumentVerification(report) {
+        const idcUrl =
+          "https://fake-bank-demo.rnd.gemaltodigitalbankingidcloud.com";
+        const idcScenario =
+          MODE === "FACE_AND_DOC"
+            ? "Connect_Verify_Document_Face_Passive_Liveness"
+            : "Connect_Verify_Document";
+        return new Promise(async (resolve) => {
+          if (!session.scenarioId) {
+            console.log("No active session");
+            resolve();
+            return;
+          }
+          console.log("Getting results...");
+          const res = await idcPatch(
+            session.scenarioId,
+            idcUrl,
+            Credential.USER_PROXY,
+            Credential.PASS_PROXY,
+            idcScenario,
+            "verifyResults"
+          );
+          try {
+            let authRes =
+              res.state.result.object.document.verificationResults.result;
+            const alerts =
+              res.state.result.object.document.verificationResults.alerts;
+            const regions =
+              res.state.result.object.document.verificationResults.regions;
+            let tamperRes = true;
+            if (alerts) {
+              report.alerts = [];
+              for (let i = 0; i < alerts.length; ++i) {
+                let name = alerts[i].Key;
+                if (alerts[i].Model) {
+                  name += "-" + alerts[i].Model;
+                } else if (
+                  alerts[i].RegionReferences &&
+                  alerts[i].RegionReferences.length === 1
+                ) {
+                  for (let j = 0; j < regions.length; ++j) {
+                    if (alerts[i].RegionReferences[0] === regions[j].Id) {
+                      name += "-" + regions[j].Key;
+                      break;
+                    }
+                  }
+                }
+                let value = alerts[i].Result;
+                if (value == 1) {
+                  value = "Passed";
+                } else if (value == 2) {
+                  value = "Failed";
+                } else if (value == 4) {
+                  value = "Caution";
+                } else if (value == 5) {
+                  value = "Attention";
+                } else {
+                  value = "Unknown";
+                }
+                report.alerts.push({ cols: [name, value] });
+                if (authRes !== "Attention" || value != "Attention") continue;
+                if (name === "Document Classification") {
+                  authRes += "Class";
+                } else if (name === "Document Expired") {
+                  authRes += "Expired";
+                } else if (name === "2D Barcode Read") {
+                  authRes += "Barcode";
+                }
+                //Check digital tampering
+                if (value === "Failed") {
+                  if (
+                    name ==
+                      "Document Tampering Detection-Enhanced Portrait Substitution Detection" ||
+                    name ==
+                      "Document Tampering Detection-Physical Document Presence V5.1" ||
+                    name ==
+                      "Document Tampering Detection-Text Tampering Detection V1.2.1"
+                  ) {
+                  } else {
+                    tamperRes = false;
+                  }
+                }
+              }
+            }
+            const fields =
+              res.state.result.object.document.verificationResults.dataFields;
+            if (fields) {
+              report.sensitive.fields = [];
+              for (let i = 0; i < fields.length; ++i) {
+                let name = fields[i].Key;
+                let type = fields[i].Type;
+                let value = fields[i].Value;
+                if (type === "uri") continue;
+                if (type === "datetime") {
+                  try {
+                    value = new Date(
+                      value.replace("/Date(", "").replace(")/", "")
+                    );
+                  } catch {}
+                }
+                report.sensitive.fields.push({ cols: [name, value] });
+              }
+            }
+            report.ok =
+              tamperRes &&
+              (authRes === "Passed" ||
+                authRes === "AttentionBarcode" ||
+                authRes === "AttentionExpired"); //normally expired documents wouldn't be allowed but useful for testing
+            report.result = authRes;
+            report.tamperRes = tamperRes ? "Passed" : "Failed";
+            report.docNumber =
+              res.state.result.object.document.verificationResults.documentNumber;
+            report.fullName =
+              res.state.result.object.document.verificationResults.firstName +
+              " " +
+              res.state.result.object.document.verificationResults.surname;
+            report.dateOfBirth =
+              res.state.result.object.document.verificationResults.birthDate;
+            report.expirationDate =
+              res.state.result.object.document.verificationResults.expirationDate;
+            report.portrait = res.state.result.object.document.portrait;
+            report.pdf = res.state.result.object.document.resultsPDF;
+          } catch (e) {
+            console.log("Verification response exception: " + e);
+            report.ok = false;
+            report.result = "API_ERROR";
+            alert(
+              "Temporarily DEMO backend error. You may have to refresh the page"
+            );
+          }
+          const intSession = ThalesThinLib.withSdk.getInternalSession();
+          if (
+            SPECIAL_DOUBLE_VERIF &&
+            intSession &&
+            intSession.internal.bestResult.image &&
+            intSession.internal.bestResultBack &&
+            intSession.internal.bestResultBack.image
+          ) {
+            console.log("Posting hi quality images...");
+            const idcUrl =
+              "https://fake-bank-demo.rnd.gemaltodigitalbankingidcloud.com";
+            const idcScenario =
+              MODE === "FACE_AND_DOC"
+                ? "Connect_Verify_Document_Face_Passive_Liveness"
+                : "Connect_Verify_Document";
+            const version = 2;
+            const res1 = await idcPost(
+              idcUrl,
+              Credential.USER_PROXY,
+              Credential.PASS_PROXY,
+              idcScenario,
+              version,
+              ThalesThinLib.withSdk.getLog(null, true),
+              {
+                captureMethod: "Mobile",
+                croppingMode: "None",
+                frontWhiteImage:
+                  intSession.internal.bestResult.image.hiQualImage.split(
+                    ","
+                  )[1],
+                backWhiteImage:
+                  intSession.internal.bestResultBack.image.hiQualImage.split(
+                    ","
+                  )[1],
+              }
+            );
+            if (res1 && res1.id) {
+              console.log("Getting second results...");
+              const res2 = await idcPatch(
+                res1.id,
+                idcUrl,
+                Credential.USER_PROXY,
+                Credential.PASS_PROXY,
+                idcScenario,
+                "verifyResults"
+              );
+
+              let authRes2 =
+                res2.state.result.object.document.verificationResults.result;
+              let tamperRes2 =
+                res2.state.result.object.document.verificationResults
+                  .tamperResult;
+              const alerts2 =
+                res2.state.result.object.document.verificationResults.alerts;
+              const regions2 =
+                res2.state.result.object.document.verificationResults.regions;
+              report.SPECIAL_DOUBLE_VERIF = {};
+              report.SPECIAL_DOUBLE_VERIF.alerts = [];
+              if (alerts2) {
+                for (let i = 0; i < alerts2.length; ++i) {
+                  let name = alerts2[i].Key;
+                  if (alerts2[i].Model) {
+                    name += "-" + alerts2[i].Model;
+                  } else if (
+                    alerts2[i].RegionReferences &&
+                    alerts2[i].RegionReferences.length === 1
+                  ) {
+                    for (let j = 0; j < regions2.length; ++j) {
+                      if (alerts2[i].RegionReferences[0] === regions2[j].Id) {
+                        name += "-" + regions2[j].Key;
+                        break;
+                      }
+                    }
+                  }
+                  let value = alerts2[i].Result;
+                  if (value == 1) {
+                    value = "Passed";
+                  } else if (value == 2) {
+                    value = "Failed";
+                  } else if (value == 4) {
+                    value = "Caution";
+                  } else if (value == 5) {
+                    value = "Attention";
+                  } else {
+                    value = "Unknown";
+                  }
+                  if (report.alerts) {
+                    for (let pa = 0; pa < report.alerts.length; ++pa) {
+                      const pName = report.alerts[pa].cols[0];
+                      if (pName === name) {
+                        const pValue = report.alerts[pa].cols[1];
+                        if (pValue !== value) {
+                          report.SPECIAL_DOUBLE_VERIF.alerts.push({
+                            cols: ["Delta " + name, value, pValue],
+                          });
+                          console.log(
+                            "SPECIAL CHECK-> " +
+                              pName +
+                              "=" +
+                              pValue +
+                              "-" +
+                              value
+                          );
+                        }
+                      }
+                    }
+                  }
+                  if (authRes2 !== "Attention" || value != "Attention")
+                    continue;
+                  if (name === "2D Barcode Read") {
+                    authRes2 += " (2D Barcode not read)";
+                  } else if (name === "Document Expired") {
+                    authRes2 += " (EXPIRED)";
+                  } else if (name === "Document Classification") {
+                    authRes2 += " (Backside not classified)";
+                  }
+                }
+              }
+              console.log(
+                "SPECIAL CHECK-> Result=" + report.result + " vs " + authRes2
+              );
+              console.log(
+                "SPECIAL CHECK-> TamperResult=" +
+                  report.tamperRes +
+                  " vs " +
+                  tamperRes2
+              );
+              report.SPECIAL_DOUBLE_VERIF.result = authRes2;
+              report.SPECIAL_DOUBLE_VERIF.tamperRes = tamperRes2;
+            }
+          }
+          resolve();
+        });
+      }
+
+      async function uploadBarcode(barcodeB64) {
+        const idcUrl =
+          "https://fake-bank-demo.rnd.gemaltodigitalbankingidcloud.com";
+        const idcScenario =
+          MODE === "FACE_AND_DOC"
+            ? "Connect_Verify_Document_Face_Passive_Liveness"
+            : "Connect_Verify_Document";
+        let sideParam = "barcode";
+        let input = {};
+        input[sideParam] = barcodeB64;
+        let res = await idcPatch(
+          session.scenarioId,
+          idcUrl,
+          Credential.USER_PROXY,
+          Credential.PASS_PROXY,
+          idcScenario,
+          sideParam,
+          input
+        );
+        return !!res;
+      }
+
+      async function uploadFace(report) {
+        console.log("Uploading...");
+        report.doBack = false;
+        const idcUrl =
+          "https://fake-bank-demo.rnd.gemaltodigitalbankingidcloud.com";
+        const idcScenario =
+          MODE == "FACE_AND_DOC"
+            ? "Connect_Verify_Document_Face_Passive_Liveness"
+            : "Connect_Face_Match_Passive_Liveness";
+        const version = 2;
+        return new Promise(async (resolve, reject) => {
+          if (!DO_VERIFICATION) {
+            report.faceOk = true;
+            report.faceError = "Skipped";
+            resolve(report);
+            return;
+          }
+          const selfie = ThalesThinLib.withSdk.getImage(sessionFace);
+          if (!selfie) {
+            //skip
+            report.faceOk = false;
+            report.faceError = "NO_FACE";
+            console.log("Face Verification: No image");
+            resolve(report);
+            return;
+          }
+          console.log("Uploading...");
+          let startTime = Date.now();
+          const photo = lastPortrait || selfie;
+          const start =
+            MODE === "FACE_AND_DOC"
+              ? await idcPatch(
+                  sessionFace.scenarioId,
+                  idcUrl,
+                  Credential.USER_PROXY,
+                  Credential.PASS_PROXY,
+                  idcScenario,
+                  "faceMatch",
+                  {
+                    face: selfie,
+                  }
+                )
+              : await idcPost(
+                  idcUrl,
+                  Credential.USER_PROXY,
+                  Credential.PASS_PROXY,
+                  idcScenario,
+                  version,
+                  ThalesThinLib.withSdk.getLog(null, true),
+                  {
+                    face: photo,
+                    passiveLiveness: selfie,
+                  }
+                );
+          if (!start || !start.id) {
+            report.faceOk = false;
+            report.faceError = "API_ERROR";
+            alert(
+              "Temporarily DEMO backend error. You may have to refresh the page"
+            );
+            console.log("Face Verification: " + JSON.stringify(start, null, 2));
+            resolve(report);
+            return;
+          }
+          //Face verification with polling
+          const delay = 2000;
+          let res = null;
+          for (rr = 0; rr < 3; ++rr) {
+            console.log("Polling verification results...");
+            res = await idcGetStatus(
+              start.id,
+              idcUrl,
+              Credential.USER_PROXY,
+              Credential.PASS_PROXY
+            );
+            console.log("Polled verification results");
+            if (!res) {
+              report.faceOk = false;
+              report.faceError = "API_ERROR";
+              alert(
+                "Temporarily DEMO backend error. You may have to refresh the page"
+              );
+              console.log("Face Verification: " + JSON.stringify(res, null, 2));
+              resolve(report);
+              return;
+            }
+            if (!res.state.result) {
+              console.log("Delaying 2 secs to poll verification results...");
+              await new Promise((res) => {
+                window.setTimeout(() => {
+                  res();
+                }, delay);
+              });
+            }
+          }
+          report.uploadSizeFace =
+            ((selfie.length * (2 / 3)) / 1024).toFixed(2) + " kb";
+          let elapsed = Date.now() - startTime;
+          console.log("Upload time: " + (elapsed / 1000).toFixed(2) + " sec");
+          report.uploadTimeFace = (elapsed / 1000).toFixed(2) + " sec";
+
+          if (!res.state.result) {
+            report.faceOk = false;
+            report.faceOk = "API_TIMED_OUT";
+            console.log("Face Verification: " + JSON.stringify(res, null, 2));
+            resolve(report);
+            return;
+          }
+
+          //Something went wrong, not expected API response
+          if (
+            !res.state.result.object ||
+            (!res.state.result.object.livenessResult &&
+              !res.state.result.object.face)
+          ) {
+            report.faceOk = false;
+            report.faceOk = "ERROR";
+            console.log("Face Verification: " + JSON.stringify(res, null, 2));
+            resolve(report);  
+            return;
+          }
+          const r = res.state.result.object.livenessResult;
+          const rM = res.state.result.object.face;
+          report.faceLiveScore =
+            r && r.score !== undefined && r.score !== null ? r.score : -1;
+          report.faceMatchScore =
+            rM && rM.result && rM.result.startsWith("FACE_") ? rM.score : -1;
+          report.faceError = null;
+          report.faceOk = false;
+          //Only liveness performed because matching failed
+          if (!rM && r) {
+            report.faceOk = false;
+            report.faceError = r.errorCode ? r.errorCode : r.assessment;
+          } else {
+            //Liveness and face matching succeeded
+            report.faceOk = rM.result === "FACE_MATCH";
+            report.faceError = report.faceOk ? null : rM.result;
+          }
+          resolve(report);
+        });
+      }
+      //-----------------------------
+      //------------ END ------------
+      //-----------------------------
+
+      //-----------------------------------------
+      //----------- UTILITY FUNCTIONS ---------
+      //-----------------------------------------
+
+      function makeTable(tables, attachTo) {
+        if (!tables) return;
+        attachTo.innerHTML = "";
+        for (let i = 0; i < tables.length; ++i) {
+          let tableEl = document.createElement("div");
+          tableEl.classList.add("table");
+          attachTo.append(tableEl);
+          let rowHeadEl = document.createElement("div");
+          rowHeadEl.classList.add("row");
+          rowHeadEl.classList.add("header");
+          tableEl.append(rowHeadEl);
+          let tableHeader = tables[i].header;
+          if (!tableHeader) continue;
+          for (let j = 0; j < tableHeader.length; ++j) {
+            let headerEl = document.createElement("div");
+            headerEl.classList.add("cell");
+            headerEl.innerHTML = tableHeader[j];
+            rowHeadEl.append(headerEl);
+          }
+          let rows = tables[i].rows;
+          if (!rows) continue;
+          for (let j = 0; j < rows.length; ++j) {
+            let rowEl = document.createElement("div");
+            rowEl.classList.add("row");
+            tableEl.append(rowEl);
+            var cols = rows[j].cols;
+            if (!cols) continue;
+            for (let k = 0; k < cols.length; ++k) {
+              let colEl = document.createElement("div");
+              colEl.classList.add("cell");
+              if (cols[k] && typeof cols[k] === "object") {
+                colEl.innerHTML = cols[k].outerHTML;
+              } else {
+                colEl.innerHTML = cols[k];
+              }
+              rowEl.append(colEl);
+            }
+          }
+        }
+      }
+
+      function updateText(text, header) {
+        document.getElementById("maintext").innerHTML = text;
+        if (header) {
+          document.getElementById("mainheader").innerHTML = header;
+        }
+      }
+
+      function showStart() {
+        const btn = document.getElementById("mainbtn");
+        const btn2 = document.getElementById("secbtn");
+        const btn3 = document.getElementById("thirdbtn");
+        document.getElementById("actionbox").style.display = "block";
+        btn.style.display = "inline-block";
+        btn2.style.display = DO_READER ? "inline-block" : "none";
+        btn3.style.display = DO_READER ? "inline-block" : "none";
+        document.getElementById("waitBox").style.display = "none";
+        document.getElementById("OKBox").style.display = "none";
+        document.getElementById("NOKBox").style.display = "none";
+        document.getElementById("startBox").style.display = "block";
+        document.getElementById("apiId").style.display = DO_READER
+          ? "block"
+          : "none";
+        document.getElementById("apiKey").style.display = DO_READER
+          ? "block"
+          : "none";
+        document.getElementById("updateLink").style.display = DO_READER
+          ? "block"
+          : "none";
+        document.getElementById("adminLink").style.display = DO_READER
+          ? "block"
+          : "none";
+        if (!isMob) {
+          deviceSelect();
+        }
+        btn.innerHTML = DO_READER ? "Scan" : "Start";
+        btn.onclick = () => {
+          if (DO_READER) {
+            const apiId = document.getElementById("apiId").value.trim();
+            const apiKey = document.getElementById("apiKey").value.trim();
+            if (apiId && apiKey) {
+              ThalesThinLib.withSdk.configureReader(
+                {
+                  apiId: apiId,
+                  apiKey: apiKey,
+                },
+                session
+              );
+            }
+          }
+          document.getElementById("deviceSelectorDiv").style.display = "none";
+          openCamera();
+        };
+        btn2.innerHTML = "Provision";
+        btn2.onclick = () => {
+          provisionReaderWithFile();
+        };
+        btn3.innerHTML = "Un-Provision";
+        btn3.onclick = () => {
+          const apiId = document.getElementById("apiId").value.trim();
+          const apiKey = document.getElementById("apiKey").value.trim();
+          if (apiId && apiKey) {
+            ThalesThinLib.withSdk.configureReader(
+              {
+                apiId: apiId,
+                apiKey: apiKey,
+              },
+              session
+            );
+          }
+          unprovisionReader();
+        };
+      }
+
+      function showWait() {
+        document.getElementById("actionbox").style.display = "block";
+        document.getElementById("mainbtn").style.display = "none";
+        document.getElementById("OKBox").style.display = "none";
+        document.getElementById("NOKBox").style.display = "none";
+        document.getElementById("startBox").style.display = "none";
+        document.getElementById("secbtn").style.display = "none";
+        document.getElementById("thirdbtn").style.display = "none";
+        document.getElementById("verifyBox").style.display = "none";
+        document.getElementById("waitBox").style.display = "block";
+        document.getElementById("apiId").style.display = "none";
+        document.getElementById("apiKey").style.display = "none";
+        document.getElementById("updateLink").style.display = "none";
+        document.getElementById("adminLink").style.display = "none";
+      }
+
+      function showOK() {
+        const btn = document.getElementById("mainbtn");
+        const btn2 = document.getElementById("secbtn");        
+        document.getElementById("actionbox").style.display = "block";
+        document.getElementById("waitBox").style.display = "none";
+        document.getElementById("NOKBox").style.display = "none";
+        document.getElementById("startBox").style.display = "none";
+        document.getElementById("thirdbtn").style.display = "none";
+        document.getElementById("verifyBox").style.display = "none";
+        document.getElementById("OKBox").style.display = "block";
+        document.getElementById("apiId").style.display = "none";
+        document.getElementById("apiKey").style.display = "none";
+        document.getElementById("updateLink").style.display = "none";
+        document.getElementById("adminLink").style.display = "none";
+        btn.innerHTML = "Details";
+        btn.onclick = () => {
+          //Call again, to give more time to get reader logs
+          showResults(report);
+          //Show table with detailed results
+          document.getElementById("maintable").style.display = "block";
+        };
+        btn2.innerHTML = "Done";
+        btn2.onclick = () => {
+          showStart();
+          if (window.AndroidNativeInterface) {
+            try {
+              window.AndroidNativeInterface.exit()
+            } catch (e) {
+              console.log("Interface Bad Error: " + e);              
+            }
+          }
+        };
+        btn.style.display = "inline-block";
+        btn2.style.display = "inline-block";
+      }
+
+      function showNOK() {
+        const btn = document.getElementById("mainbtn");
+        const btn2 = document.getElementById("secbtn");
+        document.getElementById("actionbox").style.display = "block";        
+        document.getElementById("waitBox").style.display = "none";
+        document.getElementById("OKBox").style.display = "none";
+        document.getElementById("startBox").style.display = "none";
+        document.getElementById("verifyBox").style.display = "none";
+        document.getElementById("thirdbtn").style.display = "none";
+        document.getElementById("NOKBox").style.display = "block";
+        document.getElementById("apiId").style.display = "none";
+        document.getElementById("apiKey").style.display = "none";
+        document.getElementById("updateLink").style.display = "none";
+        document.getElementById("adminLink").style.display = "none";
+        btn.innerHTML = "Details";
+        btn.onclick = () => {
+          document.getElementById("maintable").style.display = "block";
+        };
+        btn2.innerHTML = "Done";
+        btn2.onclick = () => {
+          showStart();
+          if (window.AndroidNativeInterface) {
+            try {
+              window.AndroidNativeInterface.exit()
+            } catch (e) {
+              console.log("Interface Bad Error: " + e);              
+            }
+          }
+        };
+        btn.style.display = "inline-block";
+        btn2.style.display = "inline-block";
+      }
+
+      function showNOKFatal() {
+        const btn = document.getElementById("mainbtn");
+        document.getElementById("actionbox").style.display = "block";
+        btn.style.display = "inline-block";
+        document.getElementById("waitBox").style.display = "none";
+        document.getElementById("OKBox").style.display = "none";
+        document.getElementById("startBox").style.display = "none";
+        document.getElementById("secbtn").style.display = "none";
+        document.getElementById("thirdbtn").style.display = "none";
+        document.getElementById("verifyBox").style.display = "none";
+        document.getElementById("NOKBox").style.display = "block";
+        document.getElementById("apiId").style.display = "none";
+        document.getElementById("apiKey").style.display = "none";
+        document.getElementById("updateLink").style.display = "none";
+        document.getElementById("adminLink").style.display = "none";
+        btn.innerHTML = "Restart";
+        btn.onclick = () => {
+          showStart();          
+        };
+      }
+
+      function deviceSelect() {
+        ThalesThinLib.withSdk.getDevices().then((devices) => {
+          if (devices && devices.length > 0) {
+            let opts = "";
+            for (let i = 0; i < devices.length; ++i) {
+              const value = devices[i].deviceId
+                ? devices[i].deviceId
+                : devices[i].name;
+              const name = devices[i].deviceId
+                ? devices[i].deviceId + "'>" + devices[i].name
+                : devices[i].name;
+              opts += "<option value='" + value + "'>" + name + "</option>";
+            }
+            if (opts) {
+              document.getElementById("deviceSelectorDiv").style.display =
+                "block";
+              document.getElementById("deviceSelector").innerHTML = opts;
+            }
+          } else {
+            document.getElementById("deviceSelectorDiv").style.display = "none";
+          }
+        });
+      }
+
+      function openReaderAdminPage() {
+        ThalesThinLib.withSdk.findReaderAdminPage(session).then((url) => {
+          if (!url) {
+            ThalesThinLib.withSdk.errorMessageUi(
+              UiMessages[ThalesThinLib.ENUM.READER_CONNECTION_FAILED],
+              UiBtn
+            );
+          } else {
+            ThalesThinLib.withSdk
+              .errorMessageUi(UiMessages["READER_ADMIN_CONNECT"], UiBtn)
+              .then(() => {
+                window.open(url, "_blank");
+              });
+          }
+        });
+      }
+
+      async function provisionReaderWithFile() {
+        try {
+          const overWifi = await ThalesThinLib.withSdk.errorMessageUi(
+            UiMessages["READER_ADMIN"],
+            UiReaderAdmin
+          );
+          await ThalesThinLib.withSdk.errorMessageUi(
+            UiMessages[!overWifi ? "READER_IP_SCAN" : "READER_ADMIN_WIFI"],
+            UiNoBtn
+          );
+          const readerName = document.getElementById("deviceSelector").value;
+          let timeout = null; //0.5 * 60 * 1000;
+          let r = await ThalesThinLib.withSdk.provisionReader(session, {
+            overWifi: overWifi,
+            readerName: readerName,
+            timeout: timeout,
+          });
+          await ThalesThinLib.withSdk.errorMessageUi(
+            UiMessages["READER_CONNECTING"],
+            UiNoBtn
+          );
+          await r.start;
+          await ThalesThinLib.withSdk.errorMessageUi(
+            UiMessages["READER_PROVISION_CHECK"],
+            UiNoBtn
+          );
+          await r.check;
+          ThalesThinLib.withSdk
+            .errorMessageUi(
+              UiMessages[ThalesThinLib.ENUM.READER_REBOOTING],
+              UiBtn
+            )
+            .then(() => {
+              showStart();
+            });
+        } catch (err) {
+          await ThalesThinLib.withSdk.errorMessageUi(UiMessages[err], UiBtn);
+          showStart();
+        }
+      }
+
+      async function unprovisionReader() {
+        //Select first reader to connect
+        const readerName = document.getElementById("deviceSelector").value;
+        const ok = ThalesThinLib.withSdk.selectReader(
+          session,
+          readerName,
+          "myself"
+        );
+        await ThalesThinLib.withSdk.errorMessageUi(
+          UiMessages["READER_CONNECTING"],
+          UiNoBtn
+        );
+        try {
+          await ThalesThinLib.withSdk.unprovisionReader(null, {});
+          ThalesThinLib.withSdk
+            .errorMessageUi(
+              UiMessages[ThalesThinLib.ENUM.READER_REBOOTING],
+              UiBtn
+            )
+            .then(() => {
+              showStart();
+            });
+        } catch (err) {
+          ThalesThinLib.withSdk
+            .errorMessageUi(UiMessages[err], UiBtn)
+            .then(() => {
+              showStart();
+            });
+        }
+      }
+
+      async function firmwareUpdateReader() {
+        //Select first reader to connect
+        const readerName = document.getElementById("deviceSelector").value;
+        const ok = ThalesThinLib.withSdk.selectReader(
+          session,
+          readerName,
+          "myself"
+        );
+        await ThalesThinLib.withSdk.errorMessageUi(
+          UiMessages["READER_FW_UPLOAD"],
+          UiNoBtn
+        );
+        try {
+          //await ThalesThinLib.withSdk.updateReaderFirmwareFromUrl(null, 'https://thalecsm.b-cdn.net/mmm-swu-image-cyclone5-1.3.0.11.swu');
+          //await ThalesThinLib.withSdk.updateReaderFirmwareFromUrl(null, 'https://192.168.86.70/mmm-swu-image-cyclone5-1.3.0.11.swu');
+          //await ThalesThinLib.withSdk.updateReaderFirmwareFromUrl(null, 'file://mmm-swu-image-cyclone5-1.3.0.11.swu');
+          await ThalesThinLib.withSdk.updateReaderFirmwareWithFile(session);
+          ThalesThinLib.withSdk
+            .errorMessageUi(UiMessages["READER_FW_INSTALL"], UiBtn)
+            .then(() => {
+              showStart();
+            });
+        } catch (err) {
+          ThalesThinLib.withSdk
+            .errorMessageUi(UiMessages[err], UiBtn)
+            .then(() => {
+              showStart();
+            });
+        }
+      }
+
+      function configureReaderWithFile() {
+        ThalesThinLib.withSdk.configureReaderWithFile(session).then(() => {
+          showStart();
+        });
+      }
+
+      //-----------------------------
+      //------------ END ------------
+      //-----------------------------
+    </script>
+    <script async src="./idcloud.js" charset="utf-8"></script>
+  </body>
+</html>

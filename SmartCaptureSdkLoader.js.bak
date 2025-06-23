@@ -1,0 +1,3 @@
+import { LiveFaceCamera } from './gbgplc-smartcapture-web-v1.1.2/package/dist/lib/face/index.js';
+console.log("SmartCaptureSDKLoader loaded: " + !!LiveFaceCamera);
+//window.SmartCaptureLiveFaceCamera = LiveFaceCamera;
